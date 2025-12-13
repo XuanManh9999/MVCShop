@@ -1,0 +1,38 @@
+<%- include("layouts/head.ejs", {title:"Tìm kiếm"})%> 
+<%- include("layouts/header.ejs")%> 
+<%- include("layouts/menu.ejs")%>
+<%- include("layouts/slider.ejs")%> 
+<!--	List Product	-->
+                <div class="products">
+                    <div id="search-result">Kết quả tìm kiếm với sản phẩm <span><%= keyword%></span></div>
+                    <div class="product-list card-deck">
+                        <%for(let item of products){%>
+                            <%- include("./components/product_item.ejs",{item})%>
+                        <%}%>
+                    </div>
+                </div>
+                <!--	End List Product	-->
+                    <div id="pagination">
+                    <ul class="pagination">
+                        <%if(page > 1){%>
+                        <li class="page-item"><a class="page-link" href="/search?keyword=<%=keyword%>&page=<%= page-1%>">&laquo;</a></li>
+                        <%}%>
+                        <%for(let item of pages){%>
+                        <li class="page-item <%= item === page? 'active' : '' %>">
+                            <%if(item === "..."){%>
+                            <span class="page-link"><%=item%></span>
+                            <%}else{%>
+                           <a class="page-link" href="/search?keyword=<%= keyword %>&page=<%= item %>"><%= item %></a>
+
+                            <%}%>
+                        </li>
+                        <%}%>
+                        <%if(page < totalPages){%>
+                        <li class="page-item"><a class="page-link" href="/search?keyword=<%=keyword%>&page=<%= page+1%>">&raquo;</a></li>
+                        <%}%>
+                    </ul>
+            </div>
+            </div>
+           
+<%- include("layouts/sidebar.ejs")%> 
+<%- include("layouts/footer.ejs")%>

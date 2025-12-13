@@ -1,0 +1,87 @@
+<%- include("layouts/head.ejs", {title:"Trang chủ"})%>
+    <%- include("layouts/header.ejs")%>
+        <%- include("layouts/menu.ejs")%>
+            <%- include("layouts/slider.ejs")%>
+
+                <style>
+                    /* Modern Product Section Styles */
+                    .products {
+                        padding: 60px 0;
+                        background: #f8f9fa;
+                    }
+
+                    .products:nth-child(even) {
+                        background: white;
+                    }
+
+                    .products h3 {
+                        font-size: 32px;
+                        font-weight: 700;
+                        color: #212529;
+                        margin-bottom: 40px;
+                        text-align: center;
+                        position: relative;
+                        padding-bottom: 15px;
+                    }
+
+                    .products h3::after {
+                        content: '';
+                        position: absolute;
+                        bottom: 0;
+                        left: 50%;
+                        transform: translateX(-50%);
+                        width: 80px;
+                        height: 4px;
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        border-radius: 2px;
+                    }
+
+                    .product-list {
+                        display: grid;
+                        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+                        gap: 30px;
+                        padding: 0 15px;
+                    }
+
+                    @media (max-width: 768px) {
+                        .product-list {
+                            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                            gap: 20px;
+                        }
+
+                        .products h3 {
+                            font-size: 24px;
+                        }
+                    }
+                </style>
+
+                <!--	Feature Product	-->
+                <div class="container-fluid">
+                    <div class="products">
+                        <div class="container">
+                            <h3>🔥 Sản phẩm nổi bật</h3>
+                            <div class="product-list">
+                                <%for(let item of featured){%>
+                                    <%- include("./components/product_item.ejs",{item})%>
+                                        <%}%>
+                            </div>
+                        </div>
+                    </div>
+                    <!--	End Feature Product	-->
+
+                    <!--	Latest Product	-->
+                    <div class="products">
+                        <div class="container">
+                            <h3>✨ Sản phẩm mới</h3>
+                            <div class="product-list">
+                                <%for(let item of lastest){%>
+                                    <%- include("./components/product_item.ejs",{item})%>
+                                        <%}%>
+                            </div>
+                        </div>
+                    </div>
+                    <!--	End Latest Product	-->
+                </div>
+
+                <%- include("layouts/sidebar.ejs")%>
+                    <%- include("layouts/footer.ejs")%>

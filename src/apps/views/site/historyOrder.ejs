@@ -1,0 +1,459 @@
+<%- include("layouts/head.ejs", { title: "Lịch sử đơn hàng" }) %>
+    <%- include("layouts/header.ejs") %>
+        <%- include("layouts/menu.ejs") %>
+            <%- include("layouts/slider.ejs") %>
+
+                <style>
+                    /* Modern Order History Styles */
+                    #order-history-container {
+                        background: #f8f9fa;
+                        padding: 40px 0;
+                        min-height: 500px;
+                    }
+
+                    .order-history-header {
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        color: white;
+                        padding: 30px;
+                        border-radius: 15px;
+                        margin-bottom: 30px;
+                        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+                    }
+
+                    .order-history-header h1 {
+                        margin: 0;
+                        font-size: 32px;
+                        font-weight: 700;
+                    }
+
+                    .order-history-header p {
+                        margin: 10px 0 0 0;
+                        opacity: 0.9;
+                        font-size: 16px;
+                    }
+
+                    .order-card {
+                        background: white;
+                        border-radius: 15px;
+                        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+                        margin-bottom: 25px;
+                        overflow: hidden;
+                        transition: all 0.3s ease;
+                    }
+
+                    .order-card:hover {
+                        transform: translateY(-5px);
+                        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+                    }
+
+                    .order-card-header {
+                        background: linear-gradient(to right, #f8f9fa, #e9ecef);
+                        padding: 20px 25px;
+                        border-bottom: 2px solid #dee2e6;
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        flex-wrap: wrap;
+                        gap: 15px;
+                    }
+
+                    .order-number {
+                        font-size: 18px;
+                        font-weight: 700;
+                        color: #495057;
+                    }
+
+                    .order-number span {
+                        color: #667eea;
+                    }
+
+                    .order-total {
+                        font-size: 20px;
+                        font-weight: 700;
+                        color: #dc3545;
+                    }
+
+                    .order-status {
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 10px;
+                    }
+
+                    .status-badge {
+                        padding: 8px 16px;
+                        border-radius: 20px;
+                        font-weight: 600;
+                        font-size: 14px;
+                        display: inline-block;
+                    }
+
+                    .status-processing {
+                        background: #fff3cd;
+                        color: #856404;
+                    }
+
+                    .status-shipping {
+                        background: #cfe2ff;
+                        color: #084298;
+                    }
+
+                    .status-cancelled {
+                        background: #f8d7da;
+                        color: #842029;
+                    }
+
+                    .status-completed {
+                        background: #d1e7dd;
+                        color: #0f5132;
+                    }
+
+                    .order-items {
+                        padding: 0;
+                    }
+
+                    .order-item {
+                        display: flex;
+                        align-items: center;
+                        padding: 20px 25px;
+                        border-bottom: 1px solid #f0f0f0;
+                        transition: background 0.2s;
+                    }
+
+                    .order-item:last-child {
+                        border-bottom: none;
+                    }
+
+                    .order-item:hover {
+                        background: #f8f9fa;
+                    }
+
+                    .item-image {
+                        width: 100px;
+                        height: 100px;
+                        object-fit: cover;
+                        border-radius: 10px;
+                        margin-right: 20px;
+                        border: 2px solid #e9ecef;
+                    }
+
+                    .item-details {
+                        flex: 1;
+                    }
+
+                    .item-name {
+                        font-size: 16px;
+                        font-weight: 600;
+                        color: #212529;
+                        margin-bottom: 8px;
+                    }
+
+                    .item-meta {
+                        display: flex;
+                        gap: 20px;
+                        color: #6c757d;
+                        font-size: 14px;
+                    }
+
+                    .item-price {
+                        text-align: right;
+                        min-width: 120px;
+                    }
+
+                    .item-price .price {
+                        font-size: 18px;
+                        font-weight: 700;
+                        color: #212529;
+                        display: block;
+                    }
+
+                    .item-price .subtotal {
+                        font-size: 14px;
+                        color: #6c757d;
+                    }
+
+                    .btn-cancel-order {
+                        background: linear-gradient(135deg, #ff6b6b, #ee5a6f);
+                        color: white;
+                        border: none;
+                        padding: 10px 20px;
+                        border-radius: 8px;
+                        font-weight: 600;
+                        transition: all 0.3s;
+                        text-decoration: none;
+                        display: inline-block;
+                    }
+
+                    .btn-cancel-order:hover {
+                        background: linear-gradient(135deg, #ee5a6f, #ff6b6b);
+                        transform: scale(1.05);
+                        color: white;
+                        text-decoration: none;
+                    }
+
+                    .empty-state {
+                        text-align: center;
+                        padding: 80px 20px;
+                        background: white;
+                        border-radius: 15px;
+                        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+                    }
+
+                    .empty-state i {
+                        font-size: 80px;
+                        color: #dee2e6;
+                        margin-bottom: 20px;
+                    }
+
+                    .empty-state h3 {
+                        color: #495057;
+                        margin-bottom: 10px;
+                    }
+
+                    .empty-state p {
+                        color: #6c757d;
+                        margin-bottom: 30px;
+                    }
+
+                    .pagination {
+                        justify-content: center;
+                        margin-top: 40px;
+                    }
+
+                    .pagination .page-link {
+                        border-radius: 8px;
+                        margin: 0 5px;
+                        border: 2px solid #dee2e6;
+                        color: #667eea;
+                        font-weight: 600;
+                    }
+
+                    .pagination .page-item.active .page-link {
+                        background: linear-gradient(135deg, #667eea, #764ba2);
+                        border-color: #667eea;
+                    }
+
+                    .login-reminder {
+                        background: white;
+                        padding: 60px 20px;
+                        border-radius: 15px;
+                        text-align: center;
+                        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+                    }
+
+                    .login-reminder i {
+                        font-size: 60px;
+                        color: #667eea;
+                        margin-bottom: 20px;
+                    }
+
+                    .login-reminder h3 {
+                        color: #495057;
+                        margin-bottom: 15px;
+                    }
+
+                    .login-reminder p {
+                        color: #6c757d;
+                        margin-bottom: 25px;
+                        font-size: 16px;
+                    }
+
+                    .btn-login {
+                        background: linear-gradient(135deg, #667eea, #764ba2);
+                        color: white;
+                        padding: 12px 40px;
+                        border-radius: 8px;
+                        font-weight: 600;
+                        border: none;
+                        transition: all 0.3s;
+                        text-decoration: none;
+                        display: inline-block;
+                    }
+
+                    .btn-login:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+                        color: white;
+                        text-decoration: none;
+                    }
+
+                    @media (max-width: 768px) {
+                        .order-card-header {
+                            flex-direction: column;
+                            align-items: flex-start;
+                        }
+
+                        .order-item {
+                            flex-direction: column;
+                            text-align: center;
+                        }
+
+                        .item-image {
+                            margin: 0 0 15px 0;
+                        }
+
+                        .item-meta {
+                            flex-direction: column;
+                            gap: 5px;
+                        }
+
+                        .item-price {
+                            text-align: center;
+                            margin-top: 10px;
+                        }
+                    }
+                </style>
+
+                <div id="order-history-container">
+                    <div class="container">
+                        <% if (email) { %>
+                            <div class="order-history-header">
+                                <h1><i class="fas fa-shopping-bag"></i> Lịch sử đơn hàng</h1>
+                                <p>Quản lý và theo dõi tất cả đơn hàng của bạn</p>
+                            </div>
+
+                            <% if (orders && orders.length> 0) { %>
+                                <% let orderIndex=1; %>
+                                    <% for (let order of orders) { %>
+                                        <% let totalAmount=0; %>
+                                            <% for (let item of order.items) { %>
+                                                <% totalAmount +=item.prd_price * item.prd_qty; %>
+                                                    <% } %>
+
+                                                        <div class="order-card">
+                                                            <div class="order-card-header">
+                                                                <div class="order-number">
+                                                                    Đơn hàng #<span>
+                                                                        <%= orderIndex++ %>
+                                                                    </span>
+                                                                    <small
+                                                                        style="color: #6c757d; font-weight: 400; margin-left: 10px;">
+                                                                        <%= order.createdAt ? new
+                                                                            Date(order.createdAt).toLocaleDateString('vi-VN')
+                                                                            : '' %>
+                                                                    </small>
+                                                                </div>
+
+                                                                <div class="order-total">
+                                                                    <%= vndPrice(totalAmount) %>
+                                                                </div>
+
+                                                                <div class="order-status">
+                                                                    <span class="status-badge 
+                                    <%= order.status === 'Đang xử lí' ? 'status-processing' : 
+                                        order.status === 'Đang giao hàng' ? 'status-shipping' : 
+                                        order.status === 'Đã hủy' ? 'status-cancelled' : 
+                                        'status-completed' %>">
+                                                                        <%= order.status %>
+                                                                    </span>
+
+                                                                    <% if (order.status==="Đang xử lí" ) { %>
+                                                                        <a href="/historyOrder/<%= order._id %>"
+                                                                            class="btn-cancel-order"
+                                                                            onclick="return confirm('Bạn có chắc muốn hủy đơn hàng này?')">
+                                                                            <i class="fas fa-times-circle"></i> Hủy đơn
+                                                                        </a>
+                                                                        <% } %>
+                                                                </div>
+                                                            </div>
+
+                                                            <div class="order-items">
+                                                                <% for (let item of order.items) { %>
+                                                                    <div class="order-item">
+                                                                        <img src="../uploads/images/<%= item.prd_thumbnail %>"
+                                                                            alt="<%= item.prd_name %>"
+                                                                            class="item-image">
+
+                                                                        <div class="item-details">
+                                                                            <div class="item-name">
+                                                                                <%= item.prd_name %>
+                                                                            </div>
+                                                                            <div class="item-meta">
+                                                                                <span><i class="fas fa-box"></i> Số
+                                                                                    lượng: <%= item.prd_qty %></span>
+                                                                                <span><i class="fas fa-tag"></i> Đơn
+                                                                                    giá: <%= vndPrice(item.prd_price) %>
+                                                                                        </span>
+                                                                            </div>
+                                                                        </div>
+
+                                                                        <div class="item-price">
+                                                                            <span class="price">
+                                                                                <%= vndPrice(item.prd_price *
+                                                                                    item.prd_qty) %>
+                                                                            </span>
+                                                                            <span class="subtotal">Thành tiền</span>
+                                                                        </div>
+                                                                    </div>
+                                                                    <% } %>
+                                                            </div>
+                                                        </div>
+                                                        <% } %>
+
+                                                            <!-- Pagination -->
+                                                            <nav aria-label="Page navigation">
+                                                                <ul class="pagination">
+                                                                    <% if(page> 1) { %>
+                                                                        <li class="page-item">
+                                                                            <a class="page-link"
+                                                                                href="/historyOrder/?page=<%= page-1 %>">
+                                                                                <i class="fas fa-chevron-left"></i>
+                                                                            </a>
+                                                                        </li>
+                                                                        <% } %>
+
+                                                                            <% for(let item of pages) { %>
+                                                                                <li
+                                                                                    class="page-item <%= item === page ? 'active' : '' %>">
+                                                                                    <% if(item==="..." ) { %>
+                                                                                        <span class="page-link">
+                                                                                            <%= item %>
+                                                                                        </span>
+                                                                                        <% } else { %>
+                                                                                            <a class="page-link"
+                                                                                                href="/historyOrder/?page=<%= item %>">
+                                                                                                <%= item %>
+                                                                                            </a>
+                                                                                            <% } %>
+                                                                                </li>
+                                                                                <% } %>
+
+                                                                                    <% if(page < totalPages) { %>
+                                                                                        <li class="page-item">
+                                                                                            <a class="page-link"
+                                                                                                href="/historyOrder/?page=<%= page+1 %>">
+                                                                                                <i
+                                                                                                    class="fas fa-chevron-right"></i>
+                                                                                            </a>
+                                                                                        </li>
+                                                                                        <% } %>
+                                                                </ul>
+                                                            </nav>
+                                                            <% } else { %>
+                                                                <div class="empty-state">
+                                                                    <i class="fas fa-shopping-cart"></i>
+                                                                    <h3>Chưa có đơn hàng nào</h3>
+                                                                    <p>Bạn chưa có đơn hàng nào. Hãy bắt đầu mua sắm
+                                                                        ngay!</p>
+                                                                    <a href="/" class="btn-login">
+                                                                        <i class="fas fa-shopping-bag"></i> Mua sắm ngay
+                                                                    </a>
+                                                                </div>
+                                                                <% } %>
+
+                                                                    <% } else { %>
+                                                                        <div class="login-reminder">
+                                                                            <i class="fas fa-user-lock"></i>
+                                                                            <h3>Vui lòng đăng nhập</h3>
+                                                                            <p>Bạn cần đăng nhập để xem lịch sử đơn hàng
+                                                                            </p>
+                                                                            <a href="/signin" class="btn-login">
+                                                                                <i class="fas fa-sign-in-alt"></i> Đăng
+                                                                                nhập ngay
+                                                                            </a>
+                                                                        </div>
+                                                                        <% } %>
+                    </div>
+                </div>
+
+                <%- include("layouts/sidebar.ejs") %>
+                    <%- include("layouts/footer.ejs") %>
