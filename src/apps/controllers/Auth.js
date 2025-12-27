@@ -4,7 +4,7 @@ const sha1 = require("js-sha1") // cài 2 thư viện mã hóa
 const bcrypt = require("bcrypt")
 const ejs = require("ejs");
 const path = require("path");
-const alert = require("alert-node");
+
 
 const { sign, verify } = require("../../common/jwt");
 
@@ -180,7 +180,7 @@ const forgotPasword = async (req, res) => {
         const html = await ejs.renderFile(path.join(viewFolder, "site/mail-reset.ejs"), { user, token });
 
         const info = await transporter.sendMail({
-            from: '"Vietpro Store 👻" vietpro.edu.vn@gmail.com', // sender address
+            from: '"Minh Trần Store 👻" minhtran.edu.vn@gmail.com', // sender address
             to: email, // list of receivers
             subject: "Reset Password ✔", // Subject line
             html,

@@ -177,9 +177,9 @@ const callback = async (req, res) => {
       vndPrice: order.amount // vndPrice có thể là biến tổng tiền hoặc cần hàm định dạng
     });
     await transporter.sendMail({
-      from: '"VietPro Store 👻" <VietPro.edu.vn@email.com>',
+      from: '"MinhTran Store 👻" <MinhTran.edu.vn@email.com>',
       to: order.email,
-      subject: "Xác nhận đơn hàng từ VietPro Store ",
+      subject: "Xác nhận đơn hàng từ MinhTran Store ",
       html,
     });
     console.log("Email xác nhận đã được gửi đến:", order.email);

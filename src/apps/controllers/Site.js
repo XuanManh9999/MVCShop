@@ -11,7 +11,7 @@ const bcrypt = require("bcrypt")
 const { response } = require("express");
 const grecaptcha = require('grecaptcha');
 const axios = require("axios");
-const alert = require("alert-node");
+
 const paginate = require("../../common/paginate");
 
 const badWordsLists = require("../../lib/addBadWords")
@@ -184,11 +184,9 @@ const comment = async (req, res) => {
     const customer = await customerModel.findOne({ email });
 
     const captchaToken = req.body['g-recaptcha-response'];
-    if (!captchaToken) {
-        alert("Vui lòng xác nhận không phải người máy");
-    }
+   
 
-    else {
+   
         const response = await axios.post('https://www.google.com/recaptcha/api/siteverify', null, {
             params: {
                 secret: '6LesTsopAAAAAOzNv4C-YGx0LIOxDDcAgao-ZJ13',
@@ -218,7 +216,6 @@ const comment = async (req, res) => {
 
 
 
-};
 
 
 
@@ -272,11 +269,6 @@ const addToCart = async (req, res) => {
     const existingItem = items.find(item => item._id === id);
     const totalQty = existingItem ? existingItem.qty + quantity : quantity;
 
-    // ❌ Nếu vượt quá tồn kho thì quay về trang hiện tại, không thêm giỏ hàng
-    if (totalQty > product.stock) {
-        alert("Sản phẩm bạn mua vượt quá lượng hàng trong kho");
-        return res.redirect("back");
-    }
 
     let isProductExists = false;
     const newItems = items.map((item) => {
@@ -408,9 +400,9 @@ const order = async (req, res) => {
     });
     // send mail with defined transport object
     await transporter.sendMail({
-        from: '"VietPro Store 👻"VietPro.edu.vn@email.com', // sender address
+        from: '"MinhTran Store 👻"MinhTran.edu.vn@email.com', // sender address
         to: body.email, // list of receivers
-        subject: "Xác nhận đơn hàng từ VietPro Store ", // Subject line
+        subject: "Xác nhận đơn hàng từ MinhTran Store ", // Subject line
         html
     });
     await newOrder.save();

@@ -5,13 +5,15 @@
   "main": "app.js",
   "scripts": {
     "start": "nodemon ./src/bin/www.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "test-db": "node scripts/test-connection.js",
+    "seed": "node scripts/seed-data.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "alert-node": "^5.0.3",
+   
     "axios": "^1.6.8",
     "bad-words": "^3.0.4",
     "bcrypt": "^5.1.1",

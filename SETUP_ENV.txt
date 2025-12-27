@@ -1,0 +1,20 @@
+===========================================
+HƯỚNG DẪN TẠO FILE .env
+===========================================
+
+1. Tạo file tên ".env" trong thư mục gốc của project (cùng cấp với package.json)
+
+2. Copy nội dung sau vào file .env:
+
+MONGODB_URI=mongodb+srv://username:password@cluster0.xxxxx.mongodb.net/vp_shop_project2?retryWrites=true&w=majority
+
+3. Thay thế:
+   - username: tên user bạn tạo trong MongoDB Atlas
+   - password: mật khẩu bạn tạo trong MongoDB Atlas  
+   - cluster0.xxxxx.mongodb.net: URL cluster của bạn từ Atlas
+   - vp_shop_project2: tên database (có thể giữ nguyên hoặc đổi)
+
+4. Lưu file và chạy: npm start
+
+Xem file HUONG_DAN_MONGODB_ATLAS.md để biết chi tiết cách lấy connection string từ MongoDB Atlas.
+

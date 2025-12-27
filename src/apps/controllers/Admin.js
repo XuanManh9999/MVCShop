@@ -12,6 +12,7 @@ const index = async (req, res)=>{
         .countDocuments();
     const total_comment = await commentModel
         .find()
+        
         .countDocuments();
     const total_slider= await sliderModel.find().countDocuments();
     const total_banner= await bannerModel.find().countDocuments();
