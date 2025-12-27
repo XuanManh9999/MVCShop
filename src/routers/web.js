@@ -11,6 +11,7 @@ const commentController = require("../apps/controllers/Comment");
 const customerController = require("../apps/controllers/Customer");
 const orderController = require("../apps/controllers/Order");
 const paymentController = require("../apps/controllers/Payment");
+const statisticsController = require("../apps/controllers/Statistics");
 const passport = require("passport");
 
 
@@ -191,6 +192,10 @@ router.get("/admin/customers/trash/delete/:id", customerController.customerTrash
 router.get("/admin/orders", orderController.index);
 router.get("/admin/orders/:id", orderController.orderDetail);
 router.get("/admin/orders/:id/status", orderController.orderStatus);
+
+//Statistics
+router.get("/admin/statistics", checkAdmin, statisticsController.index);
+router.get("/admin/statistics/chart-data", checkAdmin, statisticsController.getChartData);
 
 
 

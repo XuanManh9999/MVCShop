@@ -61,13 +61,11 @@ const orderDetail = async (req, res) => {
     for (let item of order.items) {
       totalAmount += item.prd_price * item.prd_qty;
     }
-    console.log(order);
     
     // Truyền vào view
     res.render("admin/orders/orderDetail", {
       order,
       totalAmount
-      
     });
   } catch (err) {
     console.error(err);

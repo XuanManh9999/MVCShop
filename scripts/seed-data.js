@@ -28,21 +28,19 @@ async function seedData() {
     await mongoose.connect(mongoUri);
     console.log("✅ Kết nối thành công!\n");
 
-    // Kiểm tra xem đã có dữ liệu chưa
-    const existingCategories = await categoryModel.countDocuments();
-    const existingProducts = await productModel.countDocuments();
-    const existingUsers = await userModel.countDocuments();
+    // Xóa toàn bộ dữ liệu cũ
+    console.log("🗑️  Đang xóa dữ liệu cũ...");
+    await categoryModel.deleteMany({});
+    await productModel.deleteMany({});
+    await userModel.deleteMany({});
+    await customerModel.deleteMany({});
+    await orderModel.deleteMany({});
+    await configModel.deleteMany({});
+    await bannerModel.deleteMany({});
+    await sliderModel.deleteMany({});
+    console.log("✅ Đã xóa toàn bộ dữ liệu cũ!\n");
 
-    if (existingCategories > 0 || existingProducts > 0) {
-      console.log("⚠️  Database đã có dữ liệu. Bỏ qua seed data.");
-      console.log(`   - Categories: ${existingCategories}`);
-      console.log(`   - Products: ${existingProducts}`);
-      console.log(`   - Users: ${existingUsers}`);
-      await mongoose.connection.close();
-      return;
-    }
-
-    console.log("📦 Bắt đầu tạo dữ liệu mẫu...\n");
+    console.log("📦 Bắt đầu tạo dữ liệu mẫu mới...\n");
 
     // 1. Tạo Admin User
     console.log("1️⃣  Tạo Admin User...");
@@ -415,9 +413,23 @@ async function seedData() {
     ]);
     console.log(`   ✅ Đã tạo ${customers.length} customers`);
 
-    // 5. Tạo Orders mẫu
+    // 5. Tạo Orders mẫu với các ngày khác nhau
     console.log("\n5️⃣  Tạo Orders mẫu...");
-    const orders = await orderModel.insertMany([
+
+    // Tạo hàm helper để tạo ngày trong quá khứ
+    const createDate = (daysAgo, hours = 10) => {
+      const date = new Date();
+      date.setDate(date.getDate() - daysAgo);
+      date.setHours(
+        hours,
+        Math.floor(Math.random() * 60),
+        Math.floor(Math.random() * 60)
+      );
+      return date;
+    };
+
+    const ordersData = [
+      // Hôm nay
       {
         name: customers[0].full_name,
         phone: customers[0].phone,
@@ -425,6 +437,7 @@ async function seedData() {
         address: customers[0].address,
         status: "Đang xử lí",
         is_payment: false,
+        createdAt: createDate(0, 9),
         items: [
           {
             prd_id: products[0]._id,
@@ -442,6 +455,7 @@ async function seedData() {
           },
         ],
       },
+      // Hôm qua
       {
         name: customers[1].full_name,
         phone: customers[1].phone,
@@ -449,6 +463,7 @@ async function seedData() {
         address: customers[1].address,
         status: "Đã xác nhận",
         is_payment: true,
+        createdAt: createDate(1, 14),
         items: [
           {
             prd_id: products[5]._id,
@@ -459,6 +474,7 @@ async function seedData() {
           },
         ],
       },
+      // 2 ngày trước
       {
         name: customers[2].full_name,
         phone: customers[2].phone,
@@ -466,6 +482,7 @@ async function seedData() {
         address: customers[2].address,
         status: "Đang giao hàng",
         is_payment: true,
+        createdAt: createDate(2, 11),
         items: [
           {
             prd_id: products[1]._id,
@@ -483,6 +500,7 @@ async function seedData() {
           },
         ],
       },
+      // 3 ngày trước
       {
         name: customers[3].full_name,
         phone: customers[3].phone,
@@ -490,6 +508,7 @@ async function seedData() {
         address: customers[3].address,
         status: "Đã giao hàng",
         is_payment: true,
+        createdAt: createDate(3, 16),
         items: [
           {
             prd_id: products[9]._id,
@@ -500,8 +519,251 @@ async function seedData() {
           },
         ],
       },
-    ]);
-    console.log(`   ✅ Đã tạo ${orders.length} orders`);
+      // 4 ngày trước
+      {
+        name: customers[4].full_name,
+        phone: customers[4].phone,
+        email: customers[4].email,
+        address: customers[4].address,
+        status: "Đã giao hàng",
+        is_payment: true,
+        createdAt: createDate(4, 10),
+        items: [
+          {
+            prd_id: products[2]._id,
+            prd_qty: 2,
+            prd_name: products[2].name,
+            prd_thumbnail: products[2].thumbnail,
+            prd_price: products[2].price,
+          },
+          {
+            prd_id: products[13]._id,
+            prd_qty: 1,
+            prd_name: products[13].name,
+            prd_thumbnail: products[13].thumbnail,
+            prd_price: products[13].price,
+          },
+        ],
+      },
+      // 5 ngày trước
+      {
+        name: customers[0].full_name,
+        phone: customers[0].phone,
+        email: customers[0].email,
+        address: customers[0].address,
+        status: "Đã xác nhận",
+        is_payment: true,
+        createdAt: createDate(5, 15),
+        items: [
+          {
+            prd_id: products[6]._id,
+            prd_qty: 1,
+            prd_name: products[6].name,
+            prd_thumbnail: products[6].thumbnail,
+            prd_price: products[6].price,
+          },
+        ],
+      },
+      // 6 ngày trước
+      {
+        name: customers[1].full_name,
+        phone: customers[1].phone,
+        email: customers[1].email,
+        address: customers[1].address,
+        status: "Đang giao hàng",
+        is_payment: true,
+        createdAt: createDate(6, 13),
+        items: [
+          {
+            prd_id: products[3]._id,
+            prd_qty: 1,
+            prd_name: products[3].name,
+            prd_thumbnail: products[3].thumbnail,
+            prd_price: products[3].price,
+          },
+          {
+            prd_id: products[14]._id,
+            prd_qty: 1,
+            prd_name: products[14].name,
+            prd_thumbnail: products[14].thumbnail,
+            prd_price: products[14].price,
+          },
+        ],
+      },
+      // 7 ngày trước (1 tuần)
+      {
+        name: customers[2].full_name,
+        phone: customers[2].phone,
+        email: customers[2].email,
+        address: customers[2].address,
+        status: "Đã giao hàng",
+        is_payment: true,
+        createdAt: createDate(7, 11),
+        items: [
+          {
+            prd_id: products[7]._id,
+            prd_qty: 1,
+            prd_name: products[7].name,
+            prd_thumbnail: products[7].thumbnail,
+            prd_price: products[7].price,
+          },
+        ],
+      },
+      // 10 ngày trước
+      {
+        name: customers[3].full_name,
+        phone: customers[3].phone,
+        email: customers[3].email,
+        address: customers[3].address,
+        status: "Đã giao hàng",
+        is_payment: true,
+        createdAt: createDate(10, 14),
+        items: [
+          {
+            prd_id: products[4]._id,
+            prd_qty: 1,
+            prd_name: products[4].name,
+            prd_thumbnail: products[4].thumbnail,
+            prd_price: products[4].price,
+          },
+          {
+            prd_id: products[15]._id,
+            prd_qty: 2,
+            prd_name: products[15].name,
+            prd_thumbnail: products[15].thumbnail,
+            prd_price: products[15].price,
+          },
+        ],
+      },
+      // 15 ngày trước
+      {
+        name: customers[4].full_name,
+        phone: customers[4].phone,
+        email: customers[4].email,
+        address: customers[4].address,
+        status: "Đã giao hàng",
+        is_payment: true,
+        createdAt: createDate(15, 9),
+        items: [
+          {
+            prd_id: products[8]._id,
+            prd_qty: 1,
+            prd_name: products[8].name,
+            prd_thumbnail: products[8].thumbnail,
+            prd_price: products[8].price,
+          },
+        ],
+      },
+      // 20 ngày trước
+      {
+        name: customers[0].full_name,
+        phone: customers[0].phone,
+        email: customers[0].email,
+        address: customers[0].address,
+        status: "Đã giao hàng",
+        is_payment: true,
+        createdAt: createDate(20, 16),
+        items: [
+          {
+            prd_id: products[10]._id,
+            prd_qty: 1,
+            prd_name: products[10].name,
+            prd_thumbnail: products[10].thumbnail,
+            prd_price: products[10].price,
+          },
+          {
+            prd_id: products[16]._id,
+            prd_qty: 3,
+            prd_name: products[16].name,
+            prd_thumbnail: products[16].thumbnail,
+            prd_price: products[16].price,
+          },
+        ],
+      },
+      // 25 ngày trước
+      {
+        name: customers[1].full_name,
+        phone: customers[1].phone,
+        email: customers[1].email,
+        address: customers[1].address,
+        status: "Đã giao hàng",
+        is_payment: true,
+        createdAt: createDate(25, 10),
+        items: [
+          {
+            prd_id: products[0]._id,
+            prd_qty: 1,
+            prd_name: products[0].name,
+            prd_thumbnail: products[0].thumbnail,
+            prd_price: products[0].price,
+          },
+        ],
+      },
+      // 30 ngày trước (1 tháng)
+      {
+        name: customers[2].full_name,
+        phone: customers[2].phone,
+        email: customers[2].email,
+        address: customers[2].address,
+        status: "Đã giao hàng",
+        is_payment: true,
+        createdAt: createDate(30, 15),
+        items: [
+          {
+            prd_id: products[1]._id,
+            prd_qty: 1,
+            prd_name: products[1].name,
+            prd_thumbnail: products[1].thumbnail,
+            prd_price: products[1].price,
+          },
+          {
+            prd_id: products[11]._id,
+            prd_qty: 1,
+            prd_name: products[11].name,
+            prd_thumbnail: products[11].thumbnail,
+            prd_price: products[11].price,
+          },
+        ],
+      },
+    ];
+
+    // Insert orders với timestamps tùy chỉnh
+    const orders = [];
+    for (const orderData of ordersData) {
+      const { createdAt, ...orderFields } = orderData;
+
+      // Tạo order mới và save trước
+      const order = new orderModel(orderFields);
+      await order.save();
+
+      // Sau đó update timestamps nếu có (dùng updateOne trực tiếp)
+      if (createdAt) {
+        await orderModel.updateOne(
+          { _id: order._id },
+          {
+            $set: {
+              createdAt: createdAt,
+              updatedAt: createdAt,
+            },
+          }
+        );
+      }
+
+      orders.push(order);
+    }
+
+    console.log(`   ✅ Đã tạo ${orders.length} orders với các ngày khác nhau`);
+    const maxDaysAgo = Math.max(
+      ...ordersData.map((o) => {
+        const daysAgo = Math.floor(
+          (new Date() - o.createdAt) / (1000 * 60 * 60 * 24)
+        );
+        return daysAgo;
+      })
+    );
+    console.log(
+      `   📅 Đơn hàng được tạo từ hôm nay đến ${maxDaysAgo} ngày trước`
+    );
 
     // 6. Tạo Banners
     console.log("\n6️⃣  Tạo Banners...");

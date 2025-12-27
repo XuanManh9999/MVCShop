@@ -1,0 +1,491 @@
+<%- include("../layout/head.ejs", {title: "Thống Kê Đơn Hàng"})%>
+<%- include("../layout/header.ejs")%>
+<%- include("../layout/sidebar.ejs")%>
+
+<div class="col-sm-9 col-sm-offset-3 col-lg-10 col-lg-offset-2 main">
+    <div class="row">
+        <ol class="breadcrumb">
+            <li><a href="#"><svg class="glyph stroked home"><use xlink:href="#stroked-home"></use></svg></a></li>
+            <li class="active">Thống kê đơn hàng</li>
+        </ol>
+    </div><!--/.row-->
+
+    <div class="row">
+        <div class="col-lg-12">
+            <h1 class="page-header">Thống kê đơn hàng</h1>
+        </div>
+    </div><!--/.row-->
+
+    <!-- Bộ lọc thời gian -->
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <svg class="glyph stroked calendar"><use xlink:href="#stroked-calendar"></use></svg> Bộ lọc thời gian
+                </div>
+                <div class="panel-body">
+                    <form method="GET" action="/admin/statistics" class="form-inline">
+                        <div class="form-group" style="margin-right: 10px;">
+                            <label>Khoảng thời gian: </label>
+                            <select name="period" class="form-control" onchange="this.form.submit()" style="margin-left: 10px;">
+                                <option value="all" <%= period === 'all' || !period ? 'selected' : '' %>>Tất cả</option>
+                                <option value="today" <%= period === 'today' ? 'selected' : '' %>>Hôm nay</option>
+                                <option value="week" <%= period === 'week' ? 'selected' : '' %>>Tuần này</option>
+                                <option value="month" <%= period === 'month' ? 'selected' : '' %>>Tháng này</option>
+                                <option value="year" <%= period === 'year' ? 'selected' : '' %>>Năm nay</option>
+                            </select>
+                        </div>
+                        <div class="form-group" style="margin-right: 10px;">
+                            <label>Từ ngày: </label>
+                            <input type="date" name="startDate" value="<%= startDate %>" class="form-control" style="margin-left: 10px;">
+                        </div>
+                        <div class="form-group" style="margin-right: 10px;">
+                            <label>Đến ngày: </label>
+                            <input type="date" name="endDate" value="<%= endDate %>" class="form-control" style="margin-left: 10px;">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Lọc</button>
+                        <a href="/admin/statistics" class="btn btn-default">Xóa bộ lọc</a>
+                    </form>
+                    <p class="text-muted" style="margin-top: 10px;">
+                        <strong>Khoảng thời gian: </strong><%= periodLabel %>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tổng quan -->
+    <div class="row">
+        <div class="col-xs-12 col-md-6 col-lg-3">
+            <div class="panel panel-blue panel-widget">
+                <div class="row no-padding">
+                    <div class="col-sm-3 col-lg-5 widget-left">
+                        <svg class="glyph stroked bag"><use xlink:href="#stroked-bag"></use></svg>
+                    </div>
+                    <div class="col-sm-9 col-lg-7 widget-right">
+                        <div class="large"><%= totalOrders %></div>
+                        <div class="text-muted">Tổng đơn hàng</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xs-12 col-md-6 col-lg-3">
+            <div class="panel panel-green panel-widget">
+                <div class="row no-padding">
+                    <div class="col-sm-3 col-lg-5 widget-left">
+                        <svg class="glyph stroked app-window-with-content"><use xlink:href="#stroked-app-window-with-content"></use></svg>
+                    </div>
+                    <div class="col-sm-9 col-lg-7 widget-right">
+                        <div class="large"><%= (totalRevenue / 1000000).toFixed(1) %>M</div>
+                        <div class="text-muted" style="white-space: nowrap; font-size: 12px;">Tổng doanh thu (VNĐ)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xs-12 col-md-6 col-lg-3">
+            <div class="panel panel-teal panel-widget">
+                <div class="row no-padding">
+                    <div class="col-sm-3 col-lg-5 widget-left">
+                        <svg class="glyph stroked checkmark"><use xlink:href="#stroked-checkmark"></use></svg>
+                    </div>
+                    <div class="col-sm-9 col-lg-7 widget-right">
+                        <div class="large"><%= paidOrders %></div>
+                        <div class="text-muted">Đã thanh toán</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xs-12 col-md-6 col-lg-3">
+            <div class="panel panel-orange panel-widget">
+                <div class="row no-padding">
+                    <div class="col-sm-3 col-lg-5 widget-left">
+                        <svg class="glyph stroked clock"><use xlink:href="#stroked-clock"></use></svg>
+                    </div>
+                    <div class="col-sm-9 col-lg-7 widget-right">
+                        <div class="large"><%= unpaidOrders %></div>
+                        <div class="text-muted">Chưa thanh toán</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div><!--/.row-->
+
+    <!-- Biểu đồ -->
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <svg class="glyph stroked line-graph"><use xlink:href="#stroked-line-graph"></use></svg> Biểu đồ doanh thu và đơn hàng
+                </div>
+                <div class="panel-body" style="position: relative; height: 350px;">
+                    <canvas id="revenueChart" style="max-height: 100%;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Thống kê chi tiết -->
+    <div class="row">
+        <!-- Thống kê theo trạng thái -->
+        <div class="col-lg-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <svg class="glyph stroked app-window-with-content"><use xlink:href="#stroked-app-window-with-content"></use></svg> Thống kê theo trạng thái
+                </div>
+                <div class="panel-body">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Trạng thái</th>
+                                <th>Số lượng</th>
+                                <th>Doanh thu</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% Object.keys(statusStats).forEach(status => { %>
+                                <tr>
+                                    <td><%= status %></td>
+                                    <td><%= statusStats[status].count %></td>
+                                    <td><%= statusStats[status].revenue.toLocaleString('vi-VN') %> đ</td>
+                                </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Thống kê theo phương thức thanh toán -->
+        <div class="col-lg-6">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <svg class="glyph stroked app-window-with-content"><use xlink:href="#stroked-app-window-with-content"></use></svg> Thống kê theo phương thức thanh toán
+                </div>
+                <div class="panel-body">
+                    <canvas id="paymentChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sản phẩm bán chạy -->
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <svg class="glyph stroked bag"><use xlink:href="#stroked-bag"></use></svg> Top 10 sản phẩm bán chạy
+                </div>
+                <div class="panel-body">
+                    <table class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th>STT</th>
+                                <th>Tên sản phẩm</th>
+                                <th>Số lượng bán</th>
+                                <th>Doanh thu</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% topProducts.forEach((product, index) => { %>
+                                <tr>
+                                    <td><%= index + 1 %></td>
+                                    <td><%= product.name %></td>
+                                    <td><%= product.quantity %></td>
+                                    <td><%= product.revenue.toLocaleString('vi-VN') %> đ</td>
+                                </tr>
+                            <% }) %>
+                            <% if (topProducts.length === 0) { %>
+                                <tr>
+                                    <td colspan="4" class="text-center">Chưa có dữ liệu</td>
+                                </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Khách hàng VIP -->
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <svg class="glyph stroked male-user"><use xlink:href="#stroked-male-user"></use></svg> Top 10 khách hàng VIP
+                </div>
+                <div class="panel-body">
+                    <table class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th>STT</th>
+                                <th>Tên khách hàng</th>
+                                <th>Email</th>
+                                <th>Số đơn hàng</th>
+                                <th>Tổng giá trị</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% topCustomers.forEach((customer, index) => { %>
+                                <tr>
+                                    <td><%= index + 1 %></td>
+                                    <td><%= customer.name %></td>
+                                    <td><%= customer.email %></td>
+                                    <td><%= customer.orders %></td>
+                                    <td><%= customer.revenue.toLocaleString('vi-VN') %> đ</td>
+                                </tr>
+                            <% }) %>
+                            <% if (topCustomers.length === 0) { %>
+                                <tr>
+                                    <td colspan="5" class="text-center">Chưa có dữ liệu</td>
+                                </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Đơn hàng gần đây -->
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <svg class="glyph stroked clock"><use xlink:href="#stroked-clock"></use></svg> Đơn hàng gần đây
+                </div>
+                <div class="panel-body">
+                    <table class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th>STT</th>
+                                <th>Khách hàng</th>
+                                <th>Email</th>
+                                <th>Ngày đặt</th>
+                                <th>Tổng tiền</th>
+                                <th>Trạng thái</th>
+                                <th>Thanh toán</th>
+                                <th>Chi tiết</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% recentOrders.forEach((order, index) => { %>
+                                <tr>
+                                    <td><%= index + 1 %></td>
+                                    <td><%= order.name %></td>
+                                    <td><%= order.email %></td>
+                                    <td><%= moment(order.createdAt).format('DD/MM/YYYY HH:mm') %></td>
+                                    <td><%= order.total.toLocaleString('vi-VN') %> đ</td>
+                                    <td><%= order.status %></td>
+                                    <td>
+                                        <% if (order.is_payment) { %>
+                                            <span class="label label-success">Đã thanh toán</span>
+                                        <% } else { %>
+                                            <span class="label label-warning">Chưa thanh toán</span>
+                                        <% } %>
+                                    </td>
+                                    <td>
+                                        <a href="/admin/orders/<%= order._id %>" class="btn btn-info btn-sm">
+                                            <i class="glyphicon glyphicon-eye-open"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                            <% if (recentOrders.length === 0) { %>
+                                <tr>
+                                    <td colspan="8" class="text-center">Chưa có đơn hàng nào</td>
+                                </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div><!--/.main-->
+
+<script src="js/jquery-1.11.1.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/chart.min.js"></script>
+<script>
+    // Đợi DOM và Chart.js load xong
+    (function() {
+        // Dữ liệu cho biểu đồ doanh thu
+        const dailyData = <%- JSON.stringify(dailyStats || []) %>;
+        
+        function initCharts() {
+            // Kiểm tra Chart.js đã load chưa
+            if (typeof Chart === 'undefined') {
+                console.error('Chart.js chưa được load! Vui lòng kiểm tra lại.');
+                setTimeout(initCharts, 200); // Thử lại sau 200ms
+                return;
+            }
+
+            // Kiểm tra canvas element
+            const revenueCanvas = document.getElementById("revenueChart");
+            const paymentCanvas = document.getElementById("paymentChart");
+            
+            if (!revenueCanvas) {
+                console.error('Canvas revenueChart không tồn tại!');
+                return;
+            }
+            
+            if (!paymentCanvas) {
+                console.error('Canvas paymentChart không tồn tại!');
+                return;
+            }
+
+            // Xử lý dữ liệu
+            let labels = [];
+            let revenueData = [];
+            let ordersData = [];
+            
+            if (dailyData && dailyData.length > 0) {
+                labels = dailyData.map(item => item.dateLabel || item.date);
+                revenueData = dailyData.map(item => parseFloat((item.revenue / 1000000).toFixed(2))); // Chuyển sang triệu VNĐ
+                ordersData = dailyData.map(item => parseInt(item.orders) || 0);
+            } else {
+                // Nếu không có dữ liệu, tạo dữ liệu mẫu để hiển thị
+                labels = ['Chưa có dữ liệu'];
+                revenueData = [0];
+                ordersData = [0];
+            }
+            
+            console.log('Dữ liệu biểu đồ:', { labels, revenueData, ordersData, dailyData });
+
+            // Biểu đồ doanh thu và đơn hàng (Chart.js 1.x)
+            const lineChartData = {
+                labels: labels,
+                datasets: [
+                    {
+                        label: "Doanh thu (Triệu VNĐ)",
+                        fillColor: "rgba(48, 164, 255, 0.2)",
+                        strokeColor: "rgba(48, 164, 255, 1)",
+                        pointColor: "rgba(48, 164, 255, 1)",
+                        pointStrokeColor: "#fff",
+                        pointHighlightFill: "#fff",
+                        pointHighlightStroke: "rgba(48, 164, 255, 1)",
+                        data: revenueData
+                    },
+                    {
+                        label: "Số đơn hàng",
+                        fillColor: "rgba(255, 181, 62, 0.2)",
+                        strokeColor: "rgba(255, 181, 62, 1)",
+                        pointColor: "rgba(255, 181, 62, 1)",
+                        pointStrokeColor: "#fff",
+                        pointHighlightFill: "#fff",
+                        pointHighlightStroke: "rgba(255, 181, 62, 1)",
+                        data: ordersData
+                    }
+                ]
+            };
+
+            try {
+                const ctxRevenue = revenueCanvas.getContext("2d");
+                if (window.myLine) {
+                    window.myLine.destroy();
+                }
+                
+                // Đảm bảo có ít nhất 2 điểm để vẽ đường
+                if (labels.length === 0 || revenueData.length === 0) {
+                    console.warn('Không có dữ liệu để vẽ biểu đồ');
+                    return;
+                }
+                
+                window.myLine = new Chart(ctxRevenue).Line(lineChartData, {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scaleShowGridLines: true,
+                    scaleGridLineColor: "rgba(0,0,0,.05)",
+                    scaleGridLineWidth: 1,
+                    bezierCurve: labels.length > 1, // Chỉ dùng bezier khi có nhiều hơn 1 điểm
+                    bezierCurveTension: 0.4,
+                    pointDot: true,
+                    pointDotRadius: labels.length > 15 ? 3 : 4, // Giảm kích thước nếu có nhiều điểm
+                    pointDotStrokeWidth: 1,
+                    pointHitDetectionRadius: 20,
+                    datasetStroke: true,
+                    datasetStrokeWidth: 2,
+                    datasetFill: true
+                });
+                console.log('✅ Biểu đồ doanh thu đã được vẽ thành công');
+            } catch (error) {
+                console.error('Lỗi vẽ biểu đồ doanh thu:', error);
+            }
+
+            // Biểu đồ phương thức thanh toán
+            const momoCount = <%= paymentStats.momo.count || 0 %>;
+            const cashCount = <%= paymentStats.cash.count || 0 %>;
+            
+            const paymentData = [];
+            if (momoCount > 0) {
+                paymentData.push({
+                    value: momoCount,
+                    color: "#30a5ff",
+                    highlight: "#62b9fb",
+                    label: "MoMo"
+                });
+            }
+            if (cashCount > 0) {
+                paymentData.push({
+                    value: cashCount,
+                    color: "#ffb53e",
+                    highlight: "#fac878",
+                    label: "Tiền mặt"
+                });
+            }
+            
+            // Nếu không có dữ liệu, thêm giá trị 0
+            if (paymentData.length === 0) {
+                paymentData.push({
+                    value: 1,
+                    color: "#cccccc",
+                    highlight: "#dddddd",
+                    label: "Chưa có dữ liệu"
+                });
+            }
+
+            try {
+                const ctxPayment = paymentCanvas.getContext("2d");
+                if (window.myDoughnut) {
+                    window.myDoughnut.destroy();
+                }
+                window.myDoughnut = new Chart(ctxPayment).Doughnut(paymentData, {
+                    responsive: true,
+                    segmentShowStroke: true,
+                    segmentStrokeColor: "#fff",
+                    segmentStrokeWidth: 2,
+                    percentageInnerCutout: 50,
+                    animationSteps: 100,
+                    animationEasing: "easeOutBounce",
+                    animateRotate: true,
+                    animateScale: false
+                });
+            } catch (error) {
+                console.error('Lỗi vẽ biểu đồ thanh toán:', error);
+            }
+        }
+
+        // Chờ DOM và Chart.js sẵn sàng
+        function waitForChart() {
+            if (typeof Chart !== 'undefined') {
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', initCharts);
+                } else {
+                    initCharts();
+                }
+            } else {
+                setTimeout(waitForChart, 50); // Thử lại sau 50ms
+            }
+        }
+        
+        // Bắt đầu chờ
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', waitForChart);
+        } else {
+            waitForChart();
+        }
+    })();
+</script>
+
+<%- include("../layout/footer.ejs")%>
+
