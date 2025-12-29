@@ -1,0 +1,54 @@
+@startuml
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Arial"
+skinparam defaultFontSize 11
+
+title LUỒNG QUẢN TRỊ ADMIN
+
+start
+:Admin đăng nhập;
+if (Đúng thông tin?) then (Có)
+  :Lưu session;
+  :Dashboard;
+  
+  partition "Quản lý Sản phẩm" {
+    :Xem danh sách;
+    if (Thao tác = Thêm?) then (Có)
+      :Nhập thông tin;
+      :Upload ảnh;
+      :Lưu vào DB;
+    else
+      if (Thao tác = Sửa?) then (Có)
+        :Cập nhật thông tin;
+        :Lưu vào DB;
+      else
+        if (Thao tác = Xóa?) then (Có)
+          :Đánh dấu xóa;
+        else
+          :Nhập hàng;
+          :Cập nhật tồn kho;
+        endif
+      endif
+    endif
+  }
+  
+  partition "Quản lý Đơn hàng" {
+    :Xem danh sách;
+    :Xem chi tiết;
+    :Cập nhật trạng thái;
+  }
+  
+  partition "Thống kê" {
+    :Chọn khoảng thời gian;
+    :Tính toán thống kê;
+    note right: Tổng đơn, doanh thu\nTop sản phẩm, khách hàng
+    :Hiển thị biểu đồ;
+  }
+else (Sai)
+  :Hiển thị lỗi;
+endif
+stop
+
+@enduml
+

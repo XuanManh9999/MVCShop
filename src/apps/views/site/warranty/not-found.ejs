@@ -1,0 +1,130 @@
+<%- include("../layouts/head.ejs", {title: "Không tìm thấy bảo hành"})%>
+<%- include("../layouts/header.ejs")%>
+<%- include("../layouts/menu.ejs")%>
+<%- include("../layouts/slider.ejs")%>
+
+<style>
+    /* Modern Not Found Styles - Đồng nhất với historyOrder */
+    #not-found-container {
+        background: #f8f9fa;
+        padding: 40px 0;
+        min-height: 500px;
+    }
+
+    .not-found-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+        padding: 60px 40px;
+        text-align: center;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .not-found-icon {
+        font-size: 100px;
+        color: #f9243f;
+        margin-bottom: 30px;
+    }
+
+    .not-found-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: #495057;
+        margin-bottom: 15px;
+    }
+
+    .not-found-message {
+        font-size: 16px;
+        color: #6c757d;
+        margin-bottom: 20px;
+    }
+
+    .serial-display {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        margin: 20px 0;
+        font-family: 'Courier New', monospace;
+        font-size: 16px;
+        color: #667eea;
+        font-weight: 600;
+    }
+
+    .btn-group {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        margin-top: 30px;
+        flex-wrap: wrap;
+    }
+
+    .btn-primary-custom {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        padding: 12px 30px;
+        border-radius: 8px;
+        font-weight: 600;
+        border: none;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-primary-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+
+    .btn-secondary-custom {
+        background: #6c757d;
+        color: white;
+        padding: 12px 30px;
+        border-radius: 8px;
+        font-weight: 600;
+        border: none;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-secondary-custom:hover {
+        background: #5a6268;
+        transform: translateY(-2px);
+        color: white;
+        text-decoration: none;
+    }
+</style>
+
+<div id="not-found-container">
+    <div class="container">
+        <div class="not-found-card">
+            <div class="not-found-icon">
+                <i class="fas fa-question-circle"></i>
+            </div>
+            <h2 class="not-found-title">Serial Number không hợp lệ</h2>
+            <p class="not-found-message">
+                Không tìm thấy thông tin bảo hành cho Serial Number này.
+            </p>
+            <div class="serial-display">
+                <%= serialNumber %>
+            </div>
+            <p class="not-found-message">
+                Vui lòng kiểm tra lại mã QR code hoặc liên hệ với cửa hàng để được hỗ trợ.
+            </p>
+            <div class="btn-group">
+                <a href="/" class="btn-primary-custom">
+                    <i class="fas fa-home"></i> Về trang chủ
+                </a>
+                <a href="/warranty/check" class="btn-secondary-custom">
+                    <i class="fas fa-search"></i> Kiểm tra lại
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include("../layouts/sidebar.ejs")%>
+<%- include("../layouts/footer.ejs")%>

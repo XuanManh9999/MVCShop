@@ -1,0 +1,56 @@
+@startuml
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Arial"
+skinparam defaultFontSize 11
+
+title SƠ ĐỒ TỔNG QUAN HỆ THỐNG E-COMMERCE
+
+package "Trình duyệt Web" {
+  [Khách hàng] as Customer
+  [Admin] as Admin
+}
+
+package "Lớp Hiển thị" {
+  [Views - EJS] as Views
+  [CSS/JS/Images] as Static
+}
+
+package "Lớp Ứng dụng" {
+  [Site Controller] as SiteCtrl
+  [Auth Controller] as AuthCtrl
+  [Product Controller] as ProductCtrl
+  [Order Controller] as OrderCtrl
+  [Payment Controller] as PaymentCtrl
+  [Statistics Controller] as StatsCtrl
+}
+
+package "Lớp Dữ liệu" {
+  [Product Model] as ProductModel
+  [Order Model] as OrderModel
+  [User Model] as UserModel
+  [Customer Model] as CustomerModel
+  [MongoDB] as DB
+}
+
+package "Dịch vụ bên ngoài" {
+  [MoMo Payment] as MoMo
+  [Email Service] as Email
+}
+
+Customer --> Views : Truy cập website
+Admin --> Views : Quản trị
+Views --> SiteCtrl : Xử lý request
+SiteCtrl --> ProductModel : Truy vấn sản phẩm
+SiteCtrl --> OrderModel : Tạo đơn hàng
+ProductCtrl --> ProductModel : Quản lý sản phẩm
+OrderCtrl --> OrderModel : Quản lý đơn hàng
+AuthCtrl --> UserModel : Xác thực Admin
+AuthCtrl --> CustomerModel : Xác thực KH
+ProductModel --> DB : Lưu trữ
+OrderModel --> DB : Lưu trữ
+PaymentCtrl --> MoMo : Thanh toán
+PaymentCtrl --> Email : Gửi email
+
+@enduml
+

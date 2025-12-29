@@ -1,0 +1,37 @@
+@startuml
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Arial"
+skinparam defaultFontSize 11
+
+title LUỒNG THANH TOÁN MOMO
+
+actor "Khách hàng" as KH
+participant "Payment Controller" as Payment
+participant "Order Model" as OrderDB
+participant "MoMo API" as MoMo
+participant "Email" as Email
+
+KH -> Payment: Chọn thanh toán MoMo
+Payment -> Payment: Tính tổng tiền
+Payment -> OrderDB: Tạo đơn hàng tạm
+note right: status: "Đang xử lí"\nis_payment: false
+Payment -> Payment: Tạo signature
+Payment -> MoMo: Gửi yêu cầu thanh toán
+MoMo --> Payment: Trả về payUrl
+Payment --> KH: Redirect đến MoMo
+KH -> MoMo: Thanh toán
+MoMo --> Payment: Callback (resultCode, orderId)
+
+alt Thanh toán thành công
+  Payment -> OrderDB: Cập nhật is_payment = true
+  Payment -> OrderDB: Cập nhật tồn kho
+  Payment -> Email: Gửi email xác nhận
+  Payment --> KH: Trang thành công
+else Thanh toán thất bại
+  Payment -> OrderDB: Xóa đơn hàng tạm
+  Payment --> KH: Trang thất bại
+end
+
+@enduml
+

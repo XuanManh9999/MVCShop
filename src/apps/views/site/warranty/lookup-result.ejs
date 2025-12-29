@@ -1,0 +1,376 @@
+<%- include("../layouts/head.ejs", {title: "Kết quả tra cứu bảo hành"})%>
+<%- include("../layouts/header.ejs")%>
+<%- include("../layouts/menu.ejs")%>
+<%- include("../layouts/slider.ejs")%>
+
+<style>
+    /* Modern Lookup Result Styles - Đồng nhất với historyOrder */
+    #lookup-result-container {
+        background: #f8f9fa;
+        padding: 40px 0;
+        min-height: 500px;
+    }
+
+    .result-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 15px;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .result-header h1 {
+        margin: 0;
+        font-size: 32px;
+        font-weight: 700;
+    }
+
+    .result-header p {
+        margin: 10px 0 0 0;
+        opacity: 0.9;
+        font-size: 16px;
+    }
+
+    .order-info-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+        padding: 25px;
+        margin-bottom: 25px;
+    }
+
+    .order-info-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: #667eea;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .info-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .info-table th {
+        width: 30%;
+        padding: 12px;
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        font-weight: 600;
+        color: #495057;
+    }
+
+    .info-table td {
+        padding: 12px;
+        border: 1px solid #dee2e6;
+        color: #212529;
+    }
+
+    .order-id-display {
+        font-family: 'Courier New', monospace;
+        font-size: 16px;
+        background: #f5f5f5;
+        padding: 8px 15px;
+        border-radius: 8px;
+        font-weight: 600;
+        color: #667eea;
+    }
+
+    .warranty-product-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+        margin-bottom: 25px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .warranty-product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    }
+
+    .product-header {
+        background: linear-gradient(to right, #f8f9fa, #e9ecef);
+        padding: 20px 25px;
+        border-bottom: 2px solid #dee2e6;
+    }
+
+    .product-name {
+        font-size: 20px;
+        font-weight: 700;
+        color: #495057;
+        margin: 0;
+    }
+
+    .warranty-section {
+        padding: 25px;
+    }
+
+    .section-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #667eea;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .warranty-status {
+        padding: 15px;
+        border-radius: 10px;
+        font-size: 15px;
+        margin-bottom: 15px;
+    }
+
+    .status-valid {
+        background: #d1e7dd;
+        color: #0f5132;
+        border-left: 4px solid #198754;
+    }
+
+    .status-warning {
+        background: #fff3cd;
+        color: #856404;
+        border-left: 4px solid #ffc107;
+    }
+
+    .status-expired {
+        background: #f8d7da;
+        color: #842029;
+        border-left: 4px solid #dc3545;
+    }
+
+    .progress-wrapper {
+        margin-top: 15px;
+    }
+
+    .progress {
+        height: 30px;
+        border-radius: 15px;
+        overflow: hidden;
+        background: #e9ecef;
+    }
+
+    .progress-bar {
+        line-height: 30px;
+        font-size: 14px;
+        font-weight: bold;
+        text-align: center;
+    }
+
+    .qr-code-section {
+        text-align: center;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 10px;
+        margin-top: 20px;
+    }
+
+    .qr-code-image {
+        max-width: 200px;
+        border: 3px solid #dee2e6;
+        padding: 10px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-group {
+        text-align: center;
+        margin-top: 30px;
+    }
+
+    .btn-primary-custom {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        padding: 12px 30px;
+        border-radius: 8px;
+        font-weight: 600;
+        border: none;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-block;
+        margin: 0 10px;
+    }
+
+    .btn-primary-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+
+    .btn-secondary-custom {
+        background: #6c757d;
+        color: white;
+        padding: 12px 30px;
+        border-radius: 8px;
+        font-weight: 600;
+        border: none;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-block;
+        margin: 0 10px;
+    }
+
+    .btn-secondary-custom:hover {
+        background: #5a6268;
+        transform: translateY(-2px);
+        color: white;
+        text-decoration: none;
+    }
+</style>
+
+<div id="lookup-result-container">
+    <div class="container">
+        <div class="result-header">
+            <h1><i class="fas fa-check-circle"></i> Kết quả tra cứu bảo hành</h1>
+            <p>Thông tin bảo hành cho đơn hàng của bạn</p>
+        </div>
+
+        <!-- Thông tin đơn hàng -->
+        <div class="order-info-card">
+            <h3 class="order-info-title">
+                <i class="fas fa-shopping-bag"></i> Thông tin đơn hàng
+            </h3>
+            <table class="info-table">
+                <tr>
+                    <th>Mã đơn hàng:</th>
+                    <td><span class="order-id-display"><%= order._id %></span></td>
+                </tr>
+                <tr>
+                    <th>Ngày đặt hàng:</th>
+                    <td><%= moment(order.createdAt).format('DD/MM/YYYY HH:mm') %></td>
+                </tr>
+                <tr>
+                    <th>Trạng thái:</th>
+                    <td><strong style="color: #198754;"><%= order.status %></strong></td>
+                </tr>
+                <tr>
+                    <th>Khách hàng:</th>
+                    <td><%= order.name %></td>
+                </tr>
+                <tr>
+                    <th>Email:</th>
+                    <td><%= order.email %></td>
+                </tr>
+                <tr>
+                    <th>Số điện thoại:</th>
+                    <td><%= order.phone %></td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Danh sách sản phẩm và bảo hành -->
+        <h2 style="color: #495057; margin-bottom: 25px; font-size: 24px;">
+            <i class="fas fa-box"></i> Danh sách sản phẩm và bảo hành
+        </h2>
+
+        <% for (let info of warrantyInfo) { %>
+            <div class="warranty-product-card">
+                <div class="product-header">
+                    <h3 class="product-name">
+                        <i class="fas fa-mobile-alt"></i> <%= info.warranty.prd_name %>
+                    </h3>
+                </div>
+
+                <div class="warranty-section">
+                    <!-- Thông tin sản phẩm -->
+                    <h4 class="section-title">
+                        <i class="fas fa-info-circle"></i> Thông tin sản phẩm
+                    </h4>
+                    <table class="info-table" style="margin-bottom: 20px;">
+                        <tr>
+                            <th>Serial Number:</th>
+                            <td><code style="font-size: 14px; background: #f5f5f5; padding: 5px 10px; border-radius: 5px;"><%= info.warranty.serial_number %></code></td>
+                        </tr>
+                        <tr>
+                            <th>Ngày mua:</th>
+                            <td><%= moment(info.warranty.purchase_date).format('DD/MM/YYYY HH:mm') %></td>
+                        </tr>
+                        <tr>
+                            <th>Thời gian bảo hành:</th>
+                            <td><strong><%= info.warranty.warranty_period %> tháng</strong></td>
+                        </tr>
+                        <tr>
+                            <th>Ngày kết thúc bảo hành:</th>
+                            <td><strong><%= moment(info.warranty.warranty_end_date).format('DD/MM/YYYY') %></strong></td>
+                        </tr>
+                    </table>
+
+                    <!-- Trạng thái bảo hành -->
+                    <h4 class="section-title">
+                        <i class="fas fa-clock"></i> Trạng thái bảo hành
+                    </h4>
+                    <div class="warranty-status <%= info.isExpired ? 'status-expired' : (info.daysRemaining <= 30 ? 'status-warning' : 'status-valid') %>">
+                        <% if (info.isExpired) { %>
+                            <h5 style="margin-top: 0;">
+                                <i class="fas fa-times-circle"></i> Bảo hành đã hết hạn
+                            </h5>
+                            <p style="margin-bottom: 0;">Bảo hành đã hết hạn từ <strong><%= Math.abs(info.daysRemaining) %> ngày</strong> trước.</p>
+                        <% } else { %>
+                            <h5 style="margin-top: 0;">
+                                <i class="fas fa-check-circle"></i> Bảo hành còn hiệu lực
+                            </h5>
+                            <p style="font-size: 16px; margin-top: 10px; margin-bottom: 0;">
+                                <strong>Còn lại: <%= info.daysRemaining %> ngày</strong>
+                                <% if (info.monthsRemaining > 0) { %>
+                                    (<%= info.monthsRemaining %> tháng <%= info.daysRemaining % 30 %> ngày)
+                                <% } %>
+                            </p>
+                        <% } %>
+                    </div>
+
+                    <!-- Progress bar -->
+                    <div class="progress-wrapper">
+                        <div class="progress">
+                            <div class="progress-bar <%= info.isExpired ? 'bg-danger' : (info.daysRemaining <= 30 ? 'bg-warning' : 'bg-success') %>" 
+                                 role="progressbar" 
+                                 style="width: <%= info.percentageRemaining %>%;">
+                                <%= info.percentageRemaining.toFixed(1) %>% còn lại
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- QR Code -->
+                    <div class="qr-code-section">
+                        <h5 style="color: #667eea; margin-bottom: 15px;">
+                            <i class="fas fa-qrcode"></i> QR Code bảo hành
+                        </h5>
+                        <img src="<%= info.warranty.qr_code %>" alt="QR Code" class="qr-code-image">
+                        <p style="margin-top: 10px; color: #6c757d; font-size: 12px;">
+                            Quét mã QR để kiểm tra bảo hành
+                        </p>
+                        <a href="/warranty/check/<%= info.warranty.serial_number %>" 
+                           style="color: #667eea; text-decoration: none; font-size: 14px; margin-top: 10px; display: inline-block;">
+                            <i class="fas fa-external-link-alt"></i> Xem chi tiết
+                        </a>
+                    </div>
+                </div>
+            </div>
+        <% } %>
+
+        <!-- Nút quay lại -->
+        <div class="btn-group">
+            <a href="/warranty/lookup" class="btn-secondary-custom">
+                <i class="fas fa-search"></i> Tra cứu đơn hàng khác
+            </a>
+            <a href="/historyOrder" class="btn-primary-custom">
+                <i class="fas fa-arrow-left"></i> Quay lại lịch sử đơn hàng
+            </a>
+            <a href="/" class="btn-primary-custom">
+                <i class="fas fa-home"></i> Về trang chủ
+            </a>
+        </div>
+    </div>
+</div>
+
+<%- include("../layouts/sidebar.ejs")%>
+<%- include("../layouts/footer.ejs")%>
+

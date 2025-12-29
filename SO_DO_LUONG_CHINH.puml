@@ -1,0 +1,365 @@
+@startuml SO_DO_TONG_QUAN
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Arial"
+skinparam defaultFontSize 11
+
+title SƠ ĐỒ TỔNG QUAN HỆ THỐNG E-COMMERCE
+
+package "Trình duyệt Web" {
+  [Khách hàng] as Customer
+  [Admin] as Admin
+}
+
+package "Lớp Hiển thị" {
+  [Views - EJS] as Views
+  [CSS/JS/Images] as Static
+}
+
+package "Lớp Ứng dụng" {
+  [Site Controller] as SiteCtrl
+  [Auth Controller] as AuthCtrl
+  [Product Controller] as ProductCtrl
+  [Order Controller] as OrderCtrl
+  [Payment Controller] as PaymentCtrl
+  [Statistics Controller] as StatsCtrl
+}
+
+package "Lớp Dữ liệu" {
+  [Product Model] as ProductModel
+  [Order Model] as OrderModel
+  [User Model] as UserModel
+  [Customer Model] as CustomerModel
+  [MongoDB] as DB
+}
+
+package "Dịch vụ bên ngoài" {
+  [MoMo Payment] as MoMo
+  [Email Service] as Email
+}
+
+Customer --> Views : Truy cập website
+Admin --> Views : Quản trị
+Views --> SiteCtrl : Xử lý request
+SiteCtrl --> ProductModel : Truy vấn sản phẩm
+SiteCtrl --> OrderModel : Tạo đơn hàng
+ProductCtrl --> ProductModel : Quản lý sản phẩm
+OrderCtrl --> OrderModel : Quản lý đơn hàng
+AuthCtrl --> UserModel : Xác thực Admin
+AuthCtrl --> CustomerModel : Xác thực KH
+ProductModel --> DB : Lưu trữ
+OrderModel --> DB : Lưu trữ
+PaymentCtrl --> MoMo : Thanh toán
+PaymentCtrl --> Email : Gửi email
+
+@enduml
+
+@startuml LUONG_KHACH_HANG
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Arial"
+skinparam defaultFontSize 11
+
+title LUỒNG KHÁCH HÀNG MUA HÀNG
+
+start
+:Khách hàng truy cập website;
+if (Đã đăng nhập?) then (Chưa)
+  :Đăng ký/Đăng nhập;
+  :Lưu session;
+else (Đã đăng nhập)
+endif
+:Duyệt sản phẩm;
+:Thêm vào giỏ hàng;
+note right: Lưu trong session
+:Xem giỏ hàng;
+if (Thanh toán?) then (Có)
+  :Nhập thông tin đặt hàng;
+  if (Thanh toán MoMo?) then (Có)
+    :Tạo đơn hàng tạm;
+    :Gọi API MoMo;
+    :Chuyển đến trang thanh toán;
+    if (Thanh toán thành công?) then (Có)
+      :Cập nhật đơn hàng;
+      :Trừ tồn kho;
+      :Gửi email xác nhận;
+      :Xóa giỏ hàng;
+      :Trang thành công;
+    else (Thất bại)
+      :Xóa đơn hàng tạm;
+      :Trang thất bại;
+    endif
+  else (Tiền mặt)
+    :Tạo đơn hàng;
+    :Trừ tồn kho;
+    :Gửi email;
+    :Trang thành công;
+  endif
+else (Không)
+  :Tiếp tục mua sắm;
+endif
+:Xem lịch sử đơn hàng;
+stop
+
+@enduml
+
+@startuml LUONG_ADMIN
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Arial"
+skinparam defaultFontSize 11
+
+title LUỒNG QUẢN TRỊ ADMIN
+
+start
+:Admin đăng nhập;
+if (Đúng thông tin?) then (Có)
+  :Lưu session;
+  :Dashboard;
+  
+  partition "Quản lý Sản phẩm" {
+    :Xem danh sách;
+    if (Thao tác?) then (Thêm)
+      :Nhập thông tin;
+      :Upload ảnh;
+      :Lưu vào DB;
+    else (Sửa)
+      :Cập nhật thông tin;
+      :Lưu vào DB;
+    else (Xóa)
+      :Đánh dấu xóa;
+    else (Nhập hàng)
+      :Cập nhật tồn kho;
+    endif
+  }
+  
+  partition "Quản lý Đơn hàng" {
+    :Xem danh sách;
+    :Xem chi tiết;
+    :Cập nhật trạng thái;
+  }
+  
+  partition "Thống kê" {
+    :Chọn khoảng thời gian;
+    :Tính toán thống kê;
+    note right: Tổng đơn, doanh thu\nTop sản phẩm, khách hàng
+    :Hiển thị biểu đồ;
+  }
+else (Sai)
+  :Hiển thị lỗi;
+endif
+stop
+
+@enduml
+
+@startuml LUONG_THANH_TOAN
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Arial"
+skinparam defaultFontSize 11
+
+title LUỒNG THANH TOÁN MOMO
+
+actor "Khách hàng" as KH
+participant "Payment Controller" as Payment
+participant "Order Model" as OrderDB
+participant "MoMo API" as MoMo
+participant "Email" as Email
+
+KH -> Payment: Chọn thanh toán MoMo
+Payment -> Payment: Tính tổng tiền
+Payment -> OrderDB: Tạo đơn hàng tạm
+note right: status: "Đang xử lí"\nis_payment: false
+Payment -> Payment: Tạo signature
+Payment -> MoMo: Gửi yêu cầu thanh toán
+MoMo --> Payment: Trả về payUrl
+Payment --> KH: Redirect đến MoMo
+KH -> MoMo: Thanh toán
+MoMo --> Payment: Callback (resultCode, orderId)
+
+alt Thanh toán thành công
+  Payment -> OrderDB: Cập nhật is_payment = true
+  Payment -> OrderDB: Cập nhật tồn kho
+  Payment -> Email: Gửi email xác nhận
+  Payment --> KH: Trang thành công
+else Thanh toán thất bại
+  Payment -> OrderDB: Xóa đơn hàng tạm
+  Payment --> KH: Trang thất bại
+end
+
+@enduml
+
+@startuml SO_DO_DATABASE
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Arial"
+skinparam defaultFontSize 11
+
+title SƠ ĐỒ CƠ SỞ DỮ LIỆU
+
+entity "Users" {
+  * _id
+  * email
+  * password
+  * full_name
+  --
+  Note: Quản trị viên
+}
+
+entity "Customers" {
+  * _id
+  * email
+  * password
+  * full_name
+  * phone
+  * address
+  --
+  Note: Khách hàng
+}
+
+entity "Categories" {
+  * _id
+  * title
+  * slug
+  --
+  Note: Danh mục
+}
+
+entity "Products" {
+  * _id
+  * name
+  * price
+  * stock
+  * cat_id <<FK>>
+  * thumbnail
+  --
+  Note: Sản phẩm
+}
+
+entity "Orders" {
+  * _id
+  * name
+  * email
+  * phone
+  * address
+  * status
+  * is_payment
+  * items[]
+  --
+  Note: Đơn hàng
+}
+
+entity "Comments" {
+  * _id
+  * prd_id <<FK>>
+  * email
+  * body
+  --
+  Note: Bình luận
+}
+
+Products }o--|| Categories : "thuộc"
+Comments }o--|| Products : "bình luận"
+Orders ||--o{ Products : "chứa"
+
+@enduml
+
+@startuml LUONG_XU_LY_DON_HANG
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Arial"
+skinparam defaultFontSize 11
+
+title LUỒNG XỬ LÝ ĐƠN HÀNG
+
+start
+:Khách hàng đặt hàng;
+
+partition "Bước 1: Tạo đơn hàng" {
+  :Lấy thông tin từ form;
+  :Lấy giỏ hàng từ session;
+  :Tạo Order Model;
+  :Lưu vào database;
+  note right: status: "Đang xử lí"
+}
+
+partition "Bước 2: Thanh toán" {
+  if (MoMo?) then (Có)
+    :Chờ callback;
+    :Cập nhật is_payment;
+  else (Tiền mặt)
+    :Giữ is_payment = false;
+  endif
+}
+
+partition "Bước 3: Cập nhật tồn kho" {
+  :Duyệt từng sản phẩm;
+  :Trừ số lượng: stock -= qty;
+}
+
+partition "Bước 4: Gửi email" {
+  :Render template email;
+  :Gửi email xác nhận;
+}
+
+partition "Bước 5: Xóa giỏ hàng" {
+  :Xóa session cart;
+}
+
+:Hoàn tất;
+stop
+
+@enduml
+
+@startuml LUONG_XAC_THUC
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Arial"
+skinparam defaultFontSize 11
+
+title LUỒNG XÁC THỰC NGƯỜI DÙNG
+
+start
+if (Đăng ký?) then (Có)
+  :Nhập thông tin;
+  :Kiểm tra email tồn tại;
+  if (Email chưa có?) then (Có)
+    :Mã hóa password (bcrypt);
+    :Lưu vào database;
+    :Redirect đăng nhập;
+  else (Đã có)
+    :Hiển thị lỗi;
+  endif
+else (Đăng nhập)
+  :Nhập email/password;
+  :Tìm user trong DB;
+  if (User tồn tại?) then (Có)
+    :So sánh password (bcrypt);
+    if (Đúng?) then (Có)
+      :Lưu session;
+      :Redirect trang chủ;
+    else (Sai)
+      :Hiển thị lỗi;
+    endif
+  else (Không)
+    :Hiển thị lỗi;
+  endif
+endif
+
+if (Truy cập trang admin?) then (Có)
+  :Kiểm tra session;
+  if (Có session?) then (Có)
+    :Kiểm tra role admin;
+    if (Là admin?) then (Có)
+      :Cho phép truy cập;
+    else (Không)
+      :Redirect đăng nhập;
+    endif
+  else (Không)
+    :Redirect đăng nhập;
+  endif
+endif
+stop
+
+@enduml
+

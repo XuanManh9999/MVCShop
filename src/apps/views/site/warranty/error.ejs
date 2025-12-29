@@ -1,0 +1,81 @@
+<%- include("../layouts/head.ejs", {title: "Lỗi kiểm tra bảo hành"})%>
+<%- include("../layouts/header.ejs")%>
+<%- include("../layouts/menu.ejs")%>
+<%- include("../layouts/slider.ejs")%>
+
+<style>
+    /* Modern Error Styles - Đồng nhất với historyOrder */
+    #error-container {
+        background: #f8f9fa;
+        padding: 40px 0;
+        min-height: 500px;
+    }
+
+    .error-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+        padding: 60px 40px;
+        text-align: center;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .error-icon {
+        font-size: 100px;
+        color: #f9243f;
+        margin-bottom: 30px;
+    }
+
+    .error-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: #495057;
+        margin-bottom: 15px;
+    }
+
+    .error-message {
+        font-size: 16px;
+        color: #6c757d;
+        margin-bottom: 30px;
+    }
+
+    .btn-home {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        padding: 12px 40px;
+        border-radius: 8px;
+        font-weight: 600;
+        border: none;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-home:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+</style>
+
+<div id="error-container">
+    <div class="container">
+        <div class="error-card">
+            <div class="error-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h2 class="error-title">Đã xảy ra lỗi</h2>
+            <p class="error-message">
+                <%= error || 'Đã xảy ra lỗi khi kiểm tra bảo hành. Vui lòng thử lại sau.' %>
+            </p>
+            <a href="/" class="btn-home">
+                <i class="fas fa-home"></i> Về trang chủ
+            </a>
+        </div>
+    </div>
+</div>
+
+<%- include("../layouts/sidebar.ejs")%>
+<%- include("../layouts/footer.ejs")%>

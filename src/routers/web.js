@@ -12,6 +12,7 @@ const customerController = require("../apps/controllers/Customer");
 const orderController = require("../apps/controllers/Order");
 const paymentController = require("../apps/controllers/Payment");
 const statisticsController = require("../apps/controllers/Statistics");
+const warrantyController = require("../apps/controllers/Warranty");
 const passport = require("passport");
 
 
@@ -217,4 +218,11 @@ router.get("/admin/delete-sliders/:id", advertiesController.delSlider);
 //Thanh toan momo
 router.get("/callback", paymentController.callback);
 router.post("/payment", paymentController.payment);
+
+//Warranty - Kiểm tra bảo hành
+router.get("/warranty/check/:serialNumber", checkCustomer, warrantyController.checkWarranty);
+router.get("/warranty/api/:serialNumber", warrantyController.getWarrantyInfo);
+router.get("/warranty/lookup", checkCustomer, warrantyController.lookupWarranty);
+router.post("/warranty/lookup", checkCustomer, warrantyController.lookupWarrantyByOrderId);
+
 module.exports = router;

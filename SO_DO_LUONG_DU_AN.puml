@@ -1,0 +1,1308 @@
+@startuml SƠ ĐỒ TỔNG QUAN HỆ THỐNG E-COMMERCE
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Arial"
+skinparam defaultFontSize 10
+
+title SƠ ĐỒ TỔNG QUAN HỆ THỐNG E-COMMERCE MVC SHOP
+
+package "Client Layer" {
+  [Trình duyệt Web] as Browser
+}
+
+package "Presentation Layer" {
+  [Views - EJS Templates] as Views
+  [Static Files] as Static
+}
+
+package "Application Layer" {
+  package "Controllers" {
+    [Site Controller] as SiteCtrl
+    [Auth Controller] as AuthCtrl
+    [Product Controller] as ProductCtrl
+    [Order Controller] as OrderCtrl
+    [Payment Controller] as PaymentCtrl
+    [Statistics Controller] as StatsCtrl
+    [Admin Controller] as AdminCtrl
+  }
+  
+  package "Middlewares" {
+    [Authentication] as AuthMW
+    [Cart Management] as CartMW
+    [Upload Files] as UploadMW
+    [Share Data] as ShareMW
+  }
+  
+  package "Routers" {
+    [Web Router] as Router
+  }
+}
+
+package "Business Logic Layer" {
+  [JWT Service] as JWT
+  [Email Service] as Email
+  [Passport OAuth] as OAuth
+  [Price Formatter] as Price
+}
+
+package "Data Layer" {
+  package "Models" {
+    [User Model] as UserModel
+    [Customer Model] as CustomerModel
+    [Product Model] as ProductModel
+    [Order Model] as OrderModel
+    [Category Model] as CategoryModel
+    [Comment Model] as CommentModel
+    [Warranty Model] as WarrantyModel
+  }
+  
+  [MongoDB Database] as MongoDB
+}
+
+package "External Services" {
+  [MoMo Payment API] as MoMo
+  [Email Server] as EmailServer
+  [Google OAuth] as Google
+  [Facebook OAuth] as Facebook
+}
+
+Browser --> Views : HTTP Request
+Views --> Browser : HTML Response
+Browser --> Static : CSS/JS/Images
+
+Router --> SiteCtrl : Route to Controller
+Router --> AuthCtrl
+Router --> ProductCtrl
+Router --> OrderCtrl
+Router --> PaymentCtrl
+Router --> StatsCtrl
+Router --> AdminCtrl
+
+SiteCtrl --> AuthMW : Check Authentication
+SiteCtrl --> CartMW : Manage Cart
+ProductCtrl --> UploadMW : Upload Images
+ProductCtrl --> AuthMW : Admin Check
+
+SiteCtrl --> ProductModel : Query Products
+SiteCtrl --> OrderModel : Create Orders
+OrderCtrl --> OrderModel : Manage Orders
+ProductCtrl --> ProductModel : CRUD Products
+AuthCtrl --> UserModel : Authentication
+AuthCtrl --> CustomerModel : Customer Auth
+
+ProductModel --> MongoDB : Save/Load
+OrderModel --> MongoDB : Save/Load
+UserModel --> MongoDB : Save/Load
+CustomerModel --> MongoDB : Save/Load
+
+PaymentCtrl --> MoMo : Payment Request
+PaymentCtrl --> Email : Send Confirmation
+AuthCtrl --> Google : OAuth Login
+AuthCtrl --> Facebook : OAuth Login
+Email --> EmailServer : Send Mail
+
+@enduml
+
+@startuml LUỒNG KHÁCH HÀNG MUA HÀNG
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Arial"
+skinparam defaultFontSize 10
+
+title LUỒNG KHÁCH HÀNG MUA HÀNG VÀ THANH TOÁN
+
+start
+
+:Khách hàng truy cập website;
+note right: Trang chủ hiển thị\nsản phẩm nổi bật và mới nhất
+
+if (Đã đăng nhập?) then (Chưa)
+  :Hiển thị form đăng nhập/đăng ký;
+  :Khách hàng đăng ký tài khoản;
+  note right: Validate email, password\nMã hóa password bằng bcrypt
+  :Lưu thông tin vào Customer Model;
+  :Đăng nhập thành công;
+  :Lưu session (email, password);
+else (Đã đăng nhập)
+endif
+
+:Khách hàng duyệt sản phẩm;
+note right: Có thể xem theo danh mục\nhoặc tìm kiếm sản phẩm
+
+:Khách hàng xem chi tiết sản phẩm;
+note right: Hiển thị thông tin:\n- Giá, mô tả\n- Bảo hành\n- Phụ kiện\n- Đánh giá từ khách hàng
+
+if (Thêm vào giỏ hàng?) then (Có)
+  :Thêm sản phẩm vào session cart;
+  note right: Lưu: _id, name, price,\nthumbnail, qty vào session
+  :Chuyển đến trang giỏ hàng;
+else (Không)
+  :Tiếp tục duyệt sản phẩm;
+endif
+
+:Khách hàng xem giỏ hàng;
+note right: Hiển thị danh sách sản phẩm\nTổng tiền, số lượng
+
+if (Cập nhật giỏ hàng?) then (Có)
+  :Cập nhật số lượng sản phẩm;
+  :Xóa sản phẩm nếu cần;
+endif
+
+if (Thanh toán?) then (Có)
+  :Nhập thông tin đặt hàng;
+  note right: Tên, email, SĐT, địa chỉ
+  :Chọn phương thức thanh toán;
+  
+  if (Thanh toán MoMo?) then (Có)
+    :Tạo đơn hàng tạm (status: pending);
+    note right: Lưu vào Order Model\nis_payment = false
+    :Gọi API MoMo Payment;
+    note right: Tạo signature\nGửi request đến MoMo
+    :Chuyển hướng đến trang thanh toán MoMo;
+    :Khách hàng thanh toán trên MoMo;
+    
+    if (Thanh toán thành công?) then (Có)
+      :MoMo callback về server;
+      :Cập nhật đơn hàng (is_payment = true);
+      :Cập nhật tồn kho sản phẩm;
+      note right: Trừ số lượng đã bán\nkhỏi stock
+      :Tạo warranty records;
+      note right: Tạo bảo hành cho từng sản phẩm
+      :Gửi email xác nhận đơn hàng;
+      :Xóa giỏ hàng;
+      :Chuyển đến trang thành công;
+    else (Thất bại)
+      :Xóa đơn hàng tạm;
+      :Chuyển đến trang thất bại;
+    endif
+  else (Tiền mặt)
+    :Tạo đơn hàng (status: Đang xử lí);
+    note right: Lưu vào Order Model\nis_payment = false
+    :Cập nhật tồn kho sản phẩm;
+    :Tạo warranty records;
+    :Gửi email xác nhận đơn hàng;
+    :Xóa giỏ hàng;
+    :Chuyển đến trang thành công;
+  endif
+else (Không)
+  :Tiếp tục mua sắm;
+endif
+
+:Khách hàng xem lịch sử đơn hàng;
+note right: Hiển thị danh sách đơn hàng\nTrạng thái, tổng tiền
+
+if (Hủy đơn hàng?) then (Có)
+  :Cập nhật status = "Đã hủy";
+  :Hoàn lại tồn kho nếu cần;
+endif
+
+stop
+
+@enduml
+
+@startuml LUỒNG QUẢN TRỊ ADMIN
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Arial"
+skinparam defaultFontSize 10
+
+title LUỒNG QUẢN TRỊ CỦA ADMIN
+
+start
+
+:Admin truy cập trang đăng nhập;
+note right: /admin/login
+
+if (Đăng nhập bằng tài khoản?) then (Có)
+  :Nhập email và password;
+  :Kiểm tra thông tin trong User Model;
+  :So sánh password với bcrypt;
+  
+  if (Đúng thông tin?) then (Có)
+    :Lưu session (email, password);
+    :Chuyển đến Dashboard;
+  else (Sai)
+    :Hiển thị lỗi đăng nhập;
+    stop
+  endif
+else (OAuth)
+  :Chọn đăng nhập Google/Facebook;
+  :Xác thực qua Passport OAuth;
+  :Lưu session;
+  :Chuyển đến Dashboard;
+endif
+
+:Admin truy cập Dashboard;
+note right: Hiển thị tổng quan hệ thống
+
+partition "QUẢN LÝ SẢN PHẨM" {
+  :Xem danh sách sản phẩm;
+  note right: Có thể lọc theo danh mục,\ntrạng thái tồn kho
+  
+  if (Thao tác?) then (Thêm mới)
+    :Nhập thông tin sản phẩm;
+    note right: Tên, giá, mô tả, danh mục,\nbảo hành, phụ kiện, tồn kho
+    :Upload ảnh sản phẩm;
+    :Tạo slug từ tên sản phẩm;
+    :Lưu vào Product Model;
+    :Hiển thị danh sách cập nhật;
+  else (Sửa)
+    :Chọn sản phẩm cần sửa;
+    :Cập nhật thông tin;
+    :Upload ảnh mới (nếu có);
+    :Lưu vào Product Model;
+  else (Xóa)
+    :Đánh dấu is_delete = true;
+    note right: Soft delete\nChuyển vào thùng rác
+    :Hoặc xóa vĩnh viễn;
+  else (Nhập hàng)
+    :Cập nhật số lượng tồn kho;
+    :Cập nhật is_stock;
+  endif
+}
+
+partition "QUẢN LÝ ĐƠN HÀNG" {
+  :Xem danh sách đơn hàng;
+  note right: Phân trang, sắp xếp theo ngày
+  
+  if (Xem chi tiết?) then (Có)
+    :Hiển thị thông tin đơn hàng;
+    note right: Khách hàng, sản phẩm,\ntổng tiền, trạng thái
+  endif
+  
+  if (Cập nhật trạng thái?) then (Có)
+    :Chọn trạng thái mới;
+    note right: Đang xử lí, Đã giao,\nĐã hủy, v.v.
+    :Cập nhật vào Order Model;
+  endif
+}
+
+partition "THỐNG KÊ BÁO CÁO" {
+  :Truy cập trang thống kê;
+  :Chọn khoảng thời gian;
+  note right: Hôm nay, tuần, tháng, năm\nhoặc tùy chọn ngày
+  
+  :Tính toán thống kê;
+  note right: - Tổng đơn hàng\n- Tổng doanh thu\n- Đơn đã/chưa thanh toán\n- Top sản phẩm bán chạy\n- Top khách hàng VIP
+  
+  :Hiển thị biểu đồ;
+  note right: Biểu đồ doanh thu theo ngày\nBiểu đồ phương thức thanh toán
+}
+
+partition "QUẢN LÝ KHÁCH HÀNG" {
+  :Xem danh sách khách hàng;
+  :Xem thông tin chi tiết;
+  :Xóa khách hàng (nếu cần);
+}
+
+partition "QUẢN LÝ BÌNH LUẬN" {
+  :Xem danh sách bình luận;
+  :Duyệt/Ẩn bình luận;
+  :Xóa bình luận spam;
+}
+
+partition "QUẢN LÝ DANH MỤC" {
+  :Thêm/Sửa/Xóa danh mục;
+  :Quản lý danh mục con;
+}
+
+:Đăng xuất;
+:Xóa session;
+stop
+
+@enduml
+
+@startuml LUỒNG XỬ LÝ THANH TOÁN MOMO
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Arial"
+skinparam defaultFontSize 10
+
+title LUỒNG XỬ LÝ THANH TOÁN QUA MOMO
+
+actor "Khách hàng" as Customer
+participant "Trình duyệt" as Browser
+participant "Payment Controller" as Payment
+participant "Order Model" as OrderDB
+participant "Product Model" as ProductDB
+participant "MoMo API" as MoMo
+participant "Email Service" as Email
+participant "Warranty Service" as Warranty
+
+Customer -> Browser: Chọn thanh toán MoMo
+Browser -> Payment: POST /payment
+
+activate Payment
+
+Payment -> Payment: Lấy thông tin giỏ hàng từ session
+Payment -> Payment: Tính tổng tiền
+
+Payment -> OrderDB: Tạo đơn hàng tạm
+note right: status: "Đang xử lí"\nis_payment: false
+
+OrderDB --> Payment: Trả về Order ID
+
+Payment -> Payment: Tạo signature MoMo
+note right: accessKey, secretKey\norderId, amount, orderInfo
+
+Payment -> MoMo: POST /v2/gateway/api/create
+note right: Gửi request với\npartnerCode, amount,\nredirectUrl, ipnUrl
+
+MoMo --> Payment: Trả về payUrl
+
+Payment -> Payment: Xóa giỏ hàng trong session
+
+Payment --> Browser: Redirect đến payUrl
+
+Browser -> Customer: Hiển thị trang thanh toán MoMo
+
+Customer -> MoMo: Xác nhận thanh toán
+MoMo -> MoMo: Xử lý thanh toán
+
+MoMo -> Browser: Redirect về /callback?resultCode=0&orderId=xxx
+
+Browser -> Payment: GET /callback
+
+activate Payment
+
+Payment -> Payment: Lấy orderId từ query
+
+Payment -> OrderDB: Tìm đơn hàng theo ID
+
+alt Đơn hàng không tồn tại
+  Payment --> Browser: Redirect /fail
+  stop
+end
+
+alt resultCode = 0 (Thành công)
+  
+  alt Đơn hàng đã được xử lý trước đó
+    Payment --> Browser: Redirect /success
+    stop
+  end
+  
+  Payment -> OrderDB: Cập nhật is_payment = true
+  Payment -> OrderDB: Cập nhật status
+  
+  Payment -> ProductDB: Cập nhật tồn kho
+  note right: Trừ số lượng đã bán\ncho từng sản phẩm
+  
+  Payment -> Warranty: Tạo warranty records
+  note right: Tạo bảo hành cho\nmỗi sản phẩm trong đơn
+  
+  Payment -> Email: Gửi email xác nhận
+  note right: Thông tin đơn hàng\nDanh sách sản phẩm
+  
+  Payment --> Browser: Redirect /success
+  
+else resultCode != 0 (Thất bại)
+  Payment -> OrderDB: Xóa đơn hàng tạm
+  Payment --> Browser: Redirect /fail
+end
+
+deactivate Payment
+
+Customer -> Browser: Xem trang thành công/thất bại
+
+@enduml
+
+@startuml SƠ ĐỒ CƠ SỞ DỮ LIỆU
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Arial"
+skinparam defaultFontSize 10
+
+title SƠ ĐỒ QUAN HỆ CƠ SỞ DỮ LIỆU
+
+entity "Users" {
+  * _id : ObjectId
+  --
+  * email : String
+  * password : String (bcrypt)
+  * full_name : String
+  role : String
+  google_id : String
+  facebook_id : String
+  tokenLogin : String
+  --
+  Note: Quản trị viên hệ thống
+}
+
+entity "Customers" {
+  * _id : ObjectId
+  --
+  * email : String
+  * password : String (bcrypt)
+  * full_name : String
+  phone : String
+  address : String
+  --
+  Note: Khách hàng mua hàng
+}
+
+entity "Categories" {
+  * _id : ObjectId
+  --
+  * title : String
+  slug : String
+  is_delete : Boolean
+  --
+  Note: Danh mục sản phẩm
+}
+
+entity "Products" {
+  * _id : ObjectId
+  --
+  * name : String
+  * slug : String
+  * thumbnail : String
+  * price : Number
+  * cat_id : ObjectId <<FK>>
+  description : String
+  status : String
+  featured : Boolean
+  promotion : String
+  warranty : String
+  warranty_period : Number
+  accessories : String
+  * is_stock : Boolean
+  stock : Number
+  is_delete : Boolean
+  createdAt : Date
+  updatedAt : Date
+  --
+  Note: Sản phẩm trong cửa hàng
+}
+
+entity "Orders" {
+  * _id : ObjectId
+  --
+  * name : String
+  * phone : String
+  * email : String
+  * address : String
+  status : String
+  is_payment : Boolean
+  * items : Array
+  createdAt : Date
+  updatedAt : Date
+  --
+  Note: Đơn hàng của khách hàng
+}
+
+entity "OrderItems" {
+  * prd_id : ObjectId <<FK>>
+  * prd_name : String
+  * prd_price : Number
+  * prd_qty : Number
+  * prd_thumbnail : String
+  --
+  Note: Chi tiết sản phẩm trong đơn hàng\n(Embedded trong Orders)
+}
+
+entity "Comments" {
+  * _id : ObjectId
+  --
+  * prd_id : ObjectId <<FK>>
+  * full_name : String
+  * email : String
+  * body : String
+  is_allowed : Boolean
+  createdAt : Date
+  --
+  Note: Bình luận của khách hàng
+}
+
+entity "Warranties" {
+  * _id : ObjectId
+  --
+  * order_id : ObjectId <<FK>>
+  * product_id : ObjectId <<FK>>
+  * serial_number : String
+  * customer_email : String
+  warranty_start_date : Date
+  warranty_end_date : Date
+  status : String
+  --
+  Note: Bảo hành sản phẩm
+}
+
+entity "Banners" {
+  * _id : ObjectId
+  --
+  * thumbnail : String
+  link : String
+  --
+  Note: Banner quảng cáo
+}
+
+entity "Sliders" {
+  * _id : ObjectId
+  --
+  * thumbnail : String
+  link : String
+  --
+  Note: Slider trang chủ
+}
+
+entity "Configs" {
+  * _id : ObjectId
+  --
+  logo_header : String
+  logo_footer : String
+  --
+  Note: Cấu hình hệ thống
+}
+
+' Relationships
+Products }o--|| Categories : "thuộc danh mục"
+Orders ||--o{ OrderItems : "chứa"
+Comments }o--|| Products : "bình luận về"
+Warranties }o--|| Orders : "thuộc đơn hàng"
+Warranties }o--|| Products : "bảo hành sản phẩm"
+
+@enduml
+
+@startuml LUỒNG XỬ LÝ ĐƠN HÀNG
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Arial"
+skinparam defaultFontSize 10
+
+title LUỒNG XỬ LÝ ĐƠN HÀNG TỪNG BƯỚC
+
+start
+
+:Khách hàng hoàn tất đặt hàng;
+
+partition "BƯỚC 1: TẠO ĐƠN HÀNG" {
+  :Lấy thông tin từ form;
+  note right: Tên, email, SĐT, địa chỉ
+  :Lấy giỏ hàng từ session;
+  :Tạo đối tượng Order;
+  :Lưu vào Order Model;
+  note right: status: "Đang xử lí"\nis_payment: false
+}
+
+partition "BƯỚC 2: XỬ LÝ THANH TOÁN" {
+  if (Phương thức thanh toán?) then (MoMo)
+    :Gọi API MoMo;
+    :Chờ callback từ MoMo;
+    
+    if (Thanh toán thành công?) then (Có)
+      :Cập nhật is_payment = true;
+    else (Thất bại)
+      :Xóa đơn hàng tạm;
+      stop
+    endif
+  else (Tiền mặt)
+    :Giữ nguyên is_payment = false;
+    note right: Thanh toán khi nhận hàng
+  endif
+}
+
+partition "BƯỚC 3: CẬP NHẬT TỒN KHO" {
+  :Duyệt qua từng sản phẩm trong đơn;
+  :Trừ số lượng đã bán khỏi stock;
+  note right: productModel.updateOne(\n{ $inc: { stock: -qty } })
+  :Kiểm tra stock còn lại;
+  
+  if (Hết hàng?) then (Có)
+    :Cập nhật is_stock = false;
+  endif
+}
+
+partition "BƯỚC 4: TẠO BẢO HÀNH" {
+  :Duyệt qua từng sản phẩm;
+  :Tạo serial number;
+  note right: Format: ORDER_ID-PRODUCT_ID-INDEX
+  :Tính ngày bắt đầu/kết thúc bảo hành;
+  note right: warranty_start_date = ngày đặt hàng\nwarranty_end_date = + warranty_period tháng
+  :Lưu vào Warranty Model;
+}
+
+partition "BƯỚC 5: GỬI EMAIL XÁC NHẬN" {
+  :Render template email;
+  note right: Sử dụng EJS template\nemail-order.ejs
+  :Chuẩn bị dữ liệu;
+  note right: Thông tin đơn hàng\nDanh sách sản phẩm\nTổng tiền
+  :Gửi email qua Nodemailer;
+  note right: SMTP server\nGmail hoặc email service
+}
+
+partition "BƯỚC 6: XÓA GIỎ HÀNG" {
+  :Xóa session cart;
+  :Lưu session;
+}
+
+partition "BƯỚC 7: QUẢN LÝ ĐƠN HÀNG (ADMIN)" {
+  :Admin xem danh sách đơn hàng;
+  :Admin xem chi tiết đơn hàng;
+  
+  if (Cập nhật trạng thái?) then (Có)
+    :Chọn trạng thái mới;
+    note right: Đang xử lí\nĐang giao hàng\nĐã giao hàng\nĐã hủy
+    :Cập nhật vào Order Model;
+  endif
+}
+
+:Hoàn tất xử lý đơn hàng;
+stop
+
+@enduml
+
+@startuml KIẾN TRÚC HỆ THỐNG CHI TIẾT
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Arial"
+skinparam defaultFontSize 10
+
+title KIẾN TRÚC HỆ THỐNG CHI TIẾT - MVC PATTERN
+
+package "1. CLIENT LAYER" {
+  [Web Browser] as Browser
+  note right of Browser
+    - Chrome, Firefox, Safari
+    - Gửi HTTP Request
+    - Nhận HTML Response
+    - Xử lý JavaScript
+  end note
+}
+
+package "2. PRESENTATION LAYER" {
+  folder "Views (EJS Templates)" {
+    [Admin Views] as AdminViews
+    [Site Views] as SiteViews
+  }
+  
+  folder "Static Assets" {
+    [CSS Files] as CSS
+    [JavaScript Files] as JS
+    [Images] as Images
+  }
+  
+  note right of AdminViews
+    - Dashboard
+    - Product Management
+    - Order Management
+    - Statistics
+    - User Management
+  end note
+  
+  note right of SiteViews
+    - Home Page
+    - Product Detail
+    - Shopping Cart
+    - Checkout
+    - Customer Account
+  end note
+}
+
+package "3. APPLICATION LAYER" {
+  [Express.js Server] as Express
+  
+  folder "Routers" {
+    [web.js] as Router
+    note: Định tuyến URL\ntới Controllers
+  }
+  
+  folder "Controllers" {
+    [SiteController] as SiteCtrl
+    [AuthController] as AuthCtrl
+    [ProductController] as ProductCtrl
+    [OrderController] as OrderCtrl
+    [PaymentController] as PaymentCtrl
+    [StatisticsController] as StatsCtrl
+    [AdminController] as AdminCtrl
+  }
+  
+  folder "Middlewares" {
+    [Auth Middleware] as AuthMW
+    [Cart Middleware] as CartMW
+    [Upload Middleware] as UploadMW
+    [Share Middleware] as ShareMW
+  }
+  
+  note right of Express
+    - Xử lý HTTP Request/Response
+    - Session Management
+    - Cookie Parser
+    - Body Parser
+    - Static File Serving
+  end note
+}
+
+package "4. BUSINESS LOGIC LAYER" {
+  [JWT Service] as JWT
+  [Email Service] as Email
+  [Passport OAuth] as OAuth
+  [Price Formatter] as Price
+  [Pagination Helper] as Pagination
+  [Bad Words Filter] as BadWords
+}
+
+package "5. DATA ACCESS LAYER" {
+  folder "Models (Mongoose)" {
+    [User Model] as UserModel
+    [Customer Model] as CustomerModel
+    [Product Model] as ProductModel
+    [Order Model] as OrderModel
+    [Category Model] as CategoryModel
+    [Comment Model] as CommentModel
+    [Warranty Model] as WarrantyModel
+  }
+  
+  [MongoDB Database] as MongoDB
+  
+  note right of MongoDB
+    Collections:
+    - users
+    - customers
+    - products
+    - orders
+    - categories
+    - comments
+    - warranties
+  end note
+}
+
+package "6. EXTERNAL SERVICES" {
+  [MoMo Payment API] as MoMo
+  [Email Server (SMTP)] as EmailServer
+  [Google OAuth API] as Google
+  [Facebook OAuth API] as Facebook
+}
+
+' Connections
+Browser --> Express : HTTP Request
+Express --> Router : Route Request
+Router --> SiteCtrl : Handle Route
+Router --> AuthCtrl
+Router --> ProductCtrl
+Router --> OrderCtrl
+Router --> PaymentCtrl
+
+SiteCtrl --> AuthMW : Check Auth
+SiteCtrl --> CartMW : Manage Cart
+ProductCtrl --> UploadMW : Upload Files
+
+SiteCtrl --> ProductModel : Query Data
+SiteCtrl --> OrderModel : Create Order
+ProductCtrl --> ProductModel : CRUD
+OrderCtrl --> OrderModel : Manage Orders
+AuthCtrl --> UserModel : Auth Check
+AuthCtrl --> CustomerModel : Customer Auth
+
+ProductModel --> MongoDB : Save/Load
+OrderModel --> MongoDB : Save/Load
+UserModel --> MongoDB : Save/Load
+
+PaymentCtrl --> MoMo : Payment Request
+Email --> EmailServer : Send Mail
+AuthCtrl --> Google : OAuth
+AuthCtrl --> Facebook : OAuth
+
+Express --> AdminViews : Render View
+Express --> SiteViews : Render View
+Express --> CSS : Serve Static
+Express --> JS : Serve Static
+
+@enduml
+
+@startuml LUỒNG XÁC THỰC VÀ PHÂN QUYỀN
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Arial"
+skinparam defaultFontSize 10
+
+title LUỒNG XÁC THỰC VÀ PHÂN QUYỀN NGƯỜI DÙNG
+
+actor "Người dùng" as User
+participant "Browser" as Browser
+participant "Auth Middleware" as AuthMW
+participant "Auth Controller" as AuthCtrl
+participant "User Model" as UserModel
+participant "Customer Model" as CustomerModel
+participant "Session" as Session
+
+== ĐĂNG KÝ TÀI KHOẢN ==
+
+User -> Browser: Truy cập /signup
+Browser -> AuthCtrl: GET /signup
+AuthCtrl -> Browser: Hiển thị form đăng ký
+
+User -> Browser: Điền thông tin và submit
+Browser -> AuthCtrl: POST /signup
+
+AuthCtrl -> CustomerModel: Kiểm tra email đã tồn tại?
+
+alt Email chưa tồn tại
+  AuthCtrl -> AuthCtrl: Mã hóa password (bcrypt)
+  AuthCtrl -> CustomerModel: Lưu thông tin khách hàng
+  AuthCtrl -> Browser: Redirect /signin
+else Email đã tồn tại
+  AuthCtrl -> Browser: Hiển thị lỗi
+end
+
+== ĐĂNG NHẬP KHÁCH HÀNG ==
+
+User -> Browser: Truy cập /signin
+Browser -> AuthCtrl: GET /signin
+AuthCtrl -> Browser: Hiển thị form đăng nhập
+
+User -> Browser: Nhập email/password
+Browser -> AuthCtrl: POST /signin
+
+AuthCtrl -> CustomerModel: Tìm user theo email
+
+alt User tồn tại
+  AuthCtrl -> AuthCtrl: So sánh password (bcrypt.compare)
+  
+  alt Password đúng
+    AuthCtrl -> Session: Lưu session (email, password)
+    AuthCtrl -> Browser: Redirect /
+  else Password sai
+    AuthCtrl -> Browser: Hiển thị lỗi
+  end
+else User không tồn tại
+  AuthCtrl -> Browser: Hiển thị lỗi
+end
+
+== ĐĂNG NHẬP ADMIN ==
+
+User -> Browser: Truy cập /admin/login
+Browser -> AuthCtrl: GET /admin/login
+AuthCtrl -> Browser: Hiển thị form đăng nhập admin
+
+User -> Browser: Nhập email/password
+Browser -> AuthCtrl: POST /admin/login
+
+AuthCtrl -> UserModel: Tìm admin theo email
+
+alt Admin tồn tại
+  AuthCtrl -> AuthCtrl: So sánh password (bcrypt.compare)
+  
+  alt Password đúng
+    AuthCtrl -> Session: Lưu session (email, password)
+    AuthCtrl -> Browser: Redirect /admin/dashboard
+  else Password sai
+    AuthCtrl -> Browser: Hiển thị lỗi
+  end
+else Admin không tồn tại
+  AuthCtrl -> Browser: Hiển thị lỗi
+end
+
+== OAuth ĐĂNG NHẬP ==
+
+User -> Browser: Chọn đăng nhập Google/Facebook
+Browser -> AuthCtrl: GET /admin/auth/google
+AuthCtrl -> Google: Redirect đến Google OAuth
+Google -> User: Yêu cầu xác thực
+User -> Google: Xác nhận
+Google -> AuthCtrl: Callback với token
+AuthCtrl -> UserModel: Tìm user theo google_id
+AuthCtrl -> Session: Lưu session
+AuthCtrl -> Browser: Redirect /admin/dashboard
+
+== KIỂM TRA PHÂN QUYỀN ==
+
+User -> Browser: Truy cập /admin/products
+Browser -> AuthMW: Middleware checkAdmin
+
+AuthMW -> Session: Kiểm tra session.email
+
+alt Session tồn tại
+  AuthMW -> UserModel: Tìm user theo email
+  
+  alt User là admin
+    AuthMW -> Browser: Cho phép truy cập
+    Browser -> ProductCtrl: Xử lý request
+  else User không phải admin
+    AuthMW -> Browser: Redirect /admin/login
+  end
+else Session không tồn tại
+  AuthMW -> Browser: Redirect /admin/login
+end
+
+== ĐĂNG XUẤT ==
+
+User -> Browser: Click đăng xuất
+Browser -> AuthCtrl: GET /signout hoặc /admin/logout
+AuthCtrl -> Session: Xóa session (destroy)
+AuthCtrl -> Browser: Redirect trang chủ
+
+@enduml
+
+@startuml LUỒNG QUẢN LÝ SẢN PHẨM
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Arial"
+skinparam defaultFontSize 10
+
+title LUỒNG QUẢN LÝ SẢN PHẨM (CRUD OPERATIONS)
+
+actor "Admin" as Admin
+participant "Browser" as Browser
+participant "Product Controller" as ProductCtrl
+participant "Product Model" as ProductModel
+participant "Category Model" as CategoryModel
+participant "Upload Middleware" as UploadMW
+participant "File System" as FS
+participant "MongoDB" as DB
+
+== THÊM SẢN PHẨM MỚI ==
+
+Admin -> Browser: Truy cập /admin/products/create
+Browser -> ProductCtrl: GET /admin/products/create
+ProductCtrl -> CategoryModel: Lấy danh sách categories
+ProductCtrl -> Browser: Hiển thị form thêm sản phẩm
+
+Admin -> Browser: Điền thông tin và chọn ảnh
+Browser -> ProductCtrl: POST /admin/products/store
+note right: Form data: name, price, description,\ncat_id, warranty, stock, etc.
+
+ProductCtrl -> UploadMW: Xử lý upload ảnh
+UploadMW -> FS: Lưu file vào thư mục uploads
+UploadMW -> ProductCtrl: Trả về file path
+
+ProductCtrl -> ProductCtrl: Tạo slug từ tên sản phẩm
+ProductCtrl -> ProductModel: Tạo sản phẩm mới
+ProductModel -> DB: Lưu vào collection products
+DB -> ProductModel: Trả về sản phẩm đã lưu
+ProductCtrl -> Browser: Redirect /admin/products
+
+== XEM DANH SÁCH SẢN PHẨM ==
+
+Admin -> Browser: Truy cập /admin/products
+Browser -> ProductCtrl: GET /admin/products
+
+ProductCtrl -> ProductCtrl: Lấy query params (page, category, is_stock)
+ProductCtrl -> CategoryModel: Lấy danh sách categories
+ProductCtrl -> ProductModel: Tìm sản phẩm với filter
+note right: Filter: is_delete = false\n+ category (nếu có)\n+ is_stock (nếu có)
+
+ProductModel -> DB: Query với pagination
+DB -> ProductModel: Trả về danh sách sản phẩm
+ProductCtrl -> ProductCtrl: Tính pagination
+ProductCtrl -> Browser: Render view với danh sách
+
+== SỬA SẢN PHẨM ==
+
+Admin -> Browser: Click "Sửa" sản phẩm
+Browser -> ProductCtrl: GET /admin/products/edit/:id
+ProductCtrl -> ProductModel: Tìm sản phẩm theo ID
+ProductModel -> DB: Query sản phẩm
+DB -> ProductModel: Trả về sản phẩm
+ProductCtrl -> CategoryModel: Lấy danh sách categories
+ProductCtrl -> Browser: Hiển thị form với dữ liệu hiện tại
+
+Admin -> Browser: Cập nhật thông tin và submit
+Browser -> ProductCtrl: POST /admin/products/update/:id
+
+alt Có upload ảnh mới
+  ProductCtrl -> UploadMW: Xử lý upload
+  UploadMW -> FS: Lưu file mới
+  ProductCtrl -> ProductCtrl: Cập nhật thumbnail
+end
+
+ProductCtrl -> ProductCtrl: Tạo slug mới từ tên
+ProductCtrl -> ProductModel: Cập nhật sản phẩm
+ProductModel -> DB: Update document
+DB -> ProductModel: Xác nhận cập nhật
+ProductCtrl -> Browser: Redirect /admin/products
+
+== XÓA SẢN PHẨM (SOFT DELETE) ==
+
+Admin -> Browser: Click "Xóa" sản phẩm
+Browser -> ProductCtrl: GET /admin/products/delete/:id
+
+ProductCtrl -> ProductModel: Cập nhật is_delete = true
+ProductModel -> DB: Update document
+note right: Soft delete - không xóa thật\nChỉ đánh dấu đã xóa
+DB -> ProductModel: Xác nhận
+ProductCtrl -> Browser: Redirect /admin/products
+
+== XEM THÙNG RÁC ==
+
+Admin -> Browser: Truy cập /admin/products/trash
+Browser -> ProductCtrl: GET /admin/products/trash
+
+ProductCtrl -> ProductModel: Tìm sản phẩm với is_delete = true
+ProductModel -> DB: Query với filter
+DB -> ProductModel: Trả về danh sách
+ProductCtrl -> Browser: Hiển thị danh sách sản phẩm đã xóa
+
+== KHÔI PHỤC SẢN PHẨM ==
+
+Admin -> Browser: Click "Khôi phục"
+Browser -> ProductCtrl: GET /admin/products/trash/restore/:id
+
+ProductCtrl -> ProductModel: Cập nhật is_delete = false
+ProductModel -> DB: Update document
+ProductCtrl -> Browser: Redirect /admin/products
+
+== XÓA VĨNH VIỄN ==
+
+Admin -> Browser: Click "Xóa vĩnh viễn"
+Browser -> ProductCtrl: GET /admin/products/trash/delete/:id
+
+ProductCtrl -> ProductModel: Tìm sản phẩm
+ProductCtrl -> FS: Xóa file ảnh từ server
+ProductCtrl -> ProductModel: Xóa sản phẩm khỏi DB
+ProductModel -> DB: Delete document
+ProductCtrl -> Browser: Redirect /admin/products/trash
+
+== NHẬP HÀNG ==
+
+Admin -> Browser: Truy cập /admin/products/supply/:id
+Browser -> ProductCtrl: GET /admin/products/supply/:id
+ProductCtrl -> ProductModel: Tìm sản phẩm
+ProductCtrl -> Browser: Hiển thị form nhập hàng
+
+Admin -> Browser: Nhập số lượng nhập
+Browser -> ProductCtrl: POST /admin/products/supply/:id
+
+ProductCtrl -> ProductModel: Cập nhật stock
+note right: stock = stock + số lượng nhập\nis_stock = true (nếu stock > 0)
+ProductModel -> DB: Update document
+ProductCtrl -> Browser: Redirect /admin/products
+
+@enduml
+
+@startuml LUỒNG QUẢN LÝ GIỎ HÀNG
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Arial"
+skinparam defaultFontSize 10
+
+title LUỒNG QUẢN LÝ GIỎ HÀNG (SHOPPING CART)
+
+actor "Khách hàng" as Customer
+participant "Browser" as Browser
+participant "Session" as Session
+participant "Site Controller" as SiteCtrl
+participant "Product Model" as ProductModel
+participant "MongoDB" as DB
+
+== THÊM SẢN PHẨM VÀO GIỎ HÀNG ==
+
+Customer -> Browser: Xem chi tiết sản phẩm
+Browser -> SiteCtrl: GET /product-:slug.:id
+SiteCtrl -> ProductModel: Tìm sản phẩm theo ID
+ProductModel -> DB: Query sản phẩm
+DB -> ProductModel: Trả về sản phẩm
+SiteCtrl -> Browser: Hiển thị chi tiết sản phẩm
+
+Customer -> Browser: Chọn số lượng và click "Thêm vào giỏ"
+Browser -> SiteCtrl: POST /add-to-cart
+note right: Body: { id, qty }
+
+SiteCtrl -> Session: Lấy giỏ hàng hiện tại (req.session.cart)
+SiteCtrl -> ProductModel: Tìm sản phẩm theo ID để lấy thông tin
+ProductModel -> DB: Query sản phẩm
+DB -> ProductModel: Trả về sản phẩm
+
+alt Sản phẩm đã có trong giỏ hàng
+  SiteCtrl -> SiteCtrl: Tăng số lượng (qty += quantity)
+else Sản phẩm chưa có trong giỏ hàng
+  SiteCtrl -> SiteCtrl: Thêm sản phẩm mới vào giỏ
+  note right: { _id, name, price, thumbnail, qty }
+end
+
+SiteCtrl -> Session: Lưu giỏ hàng mới vào session
+SiteCtrl -> Browser: Redirect /cart
+
+== XEM GIỎ HÀNG ==
+
+Customer -> Browser: Truy cập /cart
+Browser -> SiteCtrl: GET /cart
+
+SiteCtrl -> Session: Lấy giỏ hàng từ session
+SiteCtrl -> SiteCtrl: Tính tổng tiền
+note right: Tổng = sum(item.price * item.qty)
+SiteCtrl -> Browser: Hiển thị giỏ hàng
+
+== CẬP NHẬT SỐ LƯỢNG ==
+
+Customer -> Browser: Thay đổi số lượng và click "Cập nhật"
+Browser -> SiteCtrl: POST /update-item-cart
+note right: Body: { products: { productId: { qty } } }
+
+SiteCtrl -> Session: Lấy giỏ hàng hiện tại
+SiteCtrl -> SiteCtrl: Cập nhật số lượng cho từng sản phẩm
+SiteCtrl -> Session: Lưu giỏ hàng đã cập nhật
+SiteCtrl -> Browser: Redirect /cart
+
+== XÓA SẢN PHẨM KHỎI GIỎ HÀNG ==
+
+Customer -> Browser: Click "Xóa" sản phẩm
+Browser -> SiteCtrl: GET /delete-item-cart-:id
+
+SiteCtrl -> Session: Lấy giỏ hàng hiện tại
+SiteCtrl -> SiteCtrl: Lọc bỏ sản phẩm có _id = id
+SiteCtrl -> Session: Lưu giỏ hàng mới
+SiteCtrl -> Browser: Redirect /cart
+
+== KIỂM TRA TỒN KHO ==
+
+note over SiteCtrl
+  Khi khách hàng đặt hàng,
+  hệ thống sẽ kiểm tra tồn kho
+  của từng sản phẩm trong giỏ hàng
+end note
+
+Customer -> Browser: Click "Thanh toán"
+Browser -> SiteCtrl: POST /order
+
+SiteCtrl -> Session: Lấy giỏ hàng
+SiteCtrl -> ProductModel: Kiểm tra tồn kho cho từng sản phẩm
+
+alt Hết hàng
+  SiteCtrl -> Browser: Hiển thị thông báo "Sản phẩm đã hết hàng"
+else Còn hàng
+  SiteCtrl -> SiteCtrl: Tiếp tục xử lý đặt hàng
+end
+
+== XÓA GIỎ HÀNG SAU KHI ĐẶT HÀNG ==
+
+note over SiteCtrl
+  Sau khi đặt hàng thành công,
+  giỏ hàng sẽ được xóa
+end note
+
+SiteCtrl -> SiteCtrl: Xử lý đặt hàng thành công
+SiteCtrl -> Session: Xóa giỏ hàng (req.session.cart = [])
+SiteCtrl -> Session: Lưu session
+SiteCtrl -> Browser: Redirect /success
+
+@enduml
+
+@startuml LUỒNG THỐNG KÊ VÀ BÁO CÁO
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Arial"
+skinparam defaultFontSize 10
+
+title LUỒNG THỐNG KÊ VÀ BÁO CÁO DOANH THU
+
+actor "Admin" as Admin
+participant "Browser" as Browser
+participant "Statistics Controller" as StatsCtrl
+participant "Order Model" as OrderModel
+participant "Product Model" as ProductModel
+participant "Customer Model" as CustomerModel
+participant "MongoDB" as DB
+
+== TRUY CẬP TRANG THỐNG KÊ ==
+
+Admin -> Browser: Truy cập /admin/statistics
+Browser -> StatsCtrl: GET /admin/statistics
+
+StatsCtrl -> StatsCtrl: Lấy query params
+note right: period: all/today/week/month/year\nstartDate, endDate (tùy chọn)
+
+== XỬ LÝ BỘ LỌC THỜI GIAN ==
+
+StatsCtrl -> StatsCtrl: Xác định khoảng thời gian
+
+alt Có startDate và endDate
+  StatsCtrl -> StatsCtrl: Tạo dateFilter từ ngày bắt đầu đến ngày kết thúc
+else Không có
+  alt period = "today"
+    StatsCtrl -> StatsCtrl: Lọc đơn hàng hôm nay
+  else period = "week"
+    StatsCtrl -> StatsCtrl: Lọc đơn hàng tuần này
+  else period = "month"
+    StatsCtrl -> StatsCtrl: Lọc đơn hàng tháng này
+  else period = "year"
+    StatsCtrl -> StatsCtrl: Lọc đơn hàng năm nay
+  else period = "all"
+    StatsCtrl -> StatsCtrl: Lấy tất cả đơn hàng
+  end
+end
+
+== TÍNH TOÁN THỐNG KÊ TỔNG QUAN ==
+
+StatsCtrl -> OrderModel: Tìm đơn hàng với dateFilter
+OrderModel -> DB: Query orders
+DB -> OrderModel: Trả về danh sách đơn hàng
+
+StatsCtrl -> StatsCtrl: Tính tổng đơn hàng
+note right: totalOrders = orders.length
+
+StatsCtrl -> StatsCtrl: Tính tổng doanh thu
+note right: totalRevenue = sum(order.items\n  .reduce(price * qty))
+
+StatsCtrl -> StatsCtrl: Đếm đơn đã thanh toán
+note right: paidOrders = orders.filter(\n  is_payment = true).length
+
+StatsCtrl -> StatsCtrl: Đếm đơn chưa thanh toán
+note right: unpaidOrders = totalOrders - paidOrders
+
+== THỐNG KÊ THEO TRẠNG THÁI ==
+
+StatsCtrl -> StatsCtrl: Duyệt qua từng đơn hàng
+StatsCtrl -> StatsCtrl: Nhóm theo status
+note right: statusStats = {\n  "Đang xử lí": { count, revenue },\n  "Đã giao": { count, revenue },\n  ...\n}
+
+== THỐNG KÊ THEO PHƯƠNG THỨC THANH TOÁN ==
+
+StatsCtrl -> StatsCtrl: Phân loại đơn hàng
+note right: is_payment = true => MoMo\nis_payment = false => Tiền mặt
+
+StatsCtrl -> StatsCtrl: Tính số lượng và doanh thu
+note right: paymentStats = {\n  momo: { count, revenue },\n  cash: { count, revenue }\n}
+
+== THỐNG KÊ THEO NGÀY (CHO BIỂU ĐỒ) ==
+
+StatsCtrl -> StatsCtrl: Nhóm đơn hàng theo ngày
+note right: dailyStats = {\n  "2024-01-01": { orders, revenue },\n  "2024-01-02": { orders, revenue },\n  ...\n}
+
+StatsCtrl -> StatsCtrl: Sắp xếp theo ngày
+StatsCtrl -> StatsCtrl: Format label cho biểu đồ
+note right: dateLabel = "DD/MM/YYYY"
+
+== THỐNG KÊ SẢN PHẨM BÁN CHẠY ==
+
+StatsCtrl -> StatsCtrl: Duyệt qua tất cả đơn hàng
+StatsCtrl -> StatsCtrl: Duyệt qua từng item trong đơn
+StatsCtrl -> StatsCtrl: Nhóm theo product_id
+note right: productStats = {\n  productId: {\n    name, quantity, revenue\n  }\n}
+
+StatsCtrl -> StatsCtrl: Sắp xếp theo số lượng bán
+StatsCtrl -> StatsCtrl: Lấy top 10 sản phẩm
+
+== THỐNG KÊ KHÁCH HÀNG VIP ==
+
+StatsCtrl -> StatsCtrl: Nhóm đơn hàng theo email khách hàng
+StatsCtrl -> StatsCtrl: Tính tổng đơn hàng và doanh thu
+note right: customerStats = {\n  email: {\n    name, orders, revenue\n  }\n}
+
+StatsCtrl -> StatsCtrl: Sắp xếp theo doanh thu
+StatsCtrl -> StatsCtrl: Lấy top 10 khách hàng
+
+== LẤY ĐƠN HÀNG GẦN ĐÂY ==
+
+StatsCtrl -> OrderModel: Lấy 10 đơn hàng mới nhất
+OrderModel -> DB: Query với sort và limit
+DB -> OrderModel: Trả về danh sách
+StatsCtrl -> StatsCtrl: Format dữ liệu cho view
+
+== HIỂN THỊ KẾT QUẢ ==
+
+StatsCtrl -> Browser: Render view với dữ liệu
+note right
+  Dữ liệu truyền vào view:
+  - totalOrders, totalRevenue
+  - paidOrders, unpaidOrders
+  - statusStats, paymentStats
+  - dailyStats (cho biểu đồ)
+  - topProducts, topCustomers
+  - recentOrders
+end note
+
+Browser -> Browser: Hiển thị biểu đồ
+note right: Sử dụng Chart.js\n- Biểu đồ đường (doanh thu)\n- Biểu đồ tròn (phương thức thanh toán)
+
+@enduml
+

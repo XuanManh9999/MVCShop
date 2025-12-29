@@ -114,6 +114,7 @@ async function seedData() {
         status: "Còn hàng",
         promotion: "Giảm 2 triệu",
         warranty: "12 tháng",
+        warranty_period: 12,
         accessories: "Sạc, tai nghe, ốp lưng",
       },
       {
@@ -130,6 +131,7 @@ async function seedData() {
         status: "Còn hàng",
         promotion: "Tặng ốp lưng",
         warranty: "12 tháng",
+        warranty_period: 12,
         accessories: "Sạc, cáp, ốp lưng",
       },
       {
@@ -145,6 +147,7 @@ async function seedData() {
         featured: true,
         status: "Còn hàng",
         warranty: "12 tháng",
+        warranty_period: 12,
       },
       {
         name: "OPPO Find X7 Ultra",
@@ -158,6 +161,7 @@ async function seedData() {
         featured: false,
         status: "Còn hàng",
         warranty: "12 tháng",
+        warranty_period: 12,
       },
       {
         name: "iPhone 14",
@@ -172,6 +176,7 @@ async function seedData() {
         status: "Còn hàng",
         promotion: "Giảm 1.5 triệu",
         warranty: "12 tháng",
+        warranty_period: 12,
       },
       // Laptop
       {
@@ -186,6 +191,7 @@ async function seedData() {
         featured: true,
         status: "Còn hàng",
         warranty: "12 tháng",
+        warranty_period: 12,
         accessories: "Adapter, chuột",
       },
       {
@@ -201,6 +207,7 @@ async function seedData() {
         featured: true,
         status: "Còn hàng",
         warranty: "24 tháng",
+        warranty_period: 24,
       },
       {
         name: "ASUS ROG Zephyrus G14",
@@ -215,6 +222,7 @@ async function seedData() {
         featured: false,
         status: "Còn hàng",
         warranty: "24 tháng",
+        warranty_period: 24,
       },
       {
         name: "HP Spectre x360",
@@ -244,6 +252,7 @@ async function seedData() {
         featured: true,
         status: "Còn hàng",
         warranty: "12 tháng",
+        warranty_period: 12,
       },
       {
         name: "Samsung Galaxy Tab S9 Ultra",
@@ -258,6 +267,7 @@ async function seedData() {
         featured: false,
         status: "Còn hàng",
         warranty: "12 tháng",
+        warranty_period: 12,
       },
       // Tai nghe
       {
@@ -272,6 +282,7 @@ async function seedData() {
         featured: true,
         status: "Còn hàng",
         warranty: "12 tháng",
+        warranty_period: 12,
       },
       {
         name: "Sony WH-1000XM5",
@@ -285,6 +296,7 @@ async function seedData() {
         featured: true,
         status: "Còn hàng",
         warranty: "12 tháng",
+        warranty_period: 12,
       },
       {
         name: "Samsung Galaxy Buds2 Pro",
@@ -314,6 +326,7 @@ async function seedData() {
         featured: true,
         status: "Còn hàng",
         warranty: "12 tháng",
+        warranty_period: 12,
       },
       {
         name: "Samsung Galaxy Watch6",
@@ -341,6 +354,7 @@ async function seedData() {
         featured: false,
         status: "Còn hàng",
         warranty: "12 tháng",
+        warranty_period: 12,
       },
       {
         name: "Ốp lưng iPhone 15 Pro Max",
@@ -354,6 +368,7 @@ async function seedData() {
         featured: false,
         status: "Còn hàng",
         warranty: "6 tháng",
+        warranty_period: 6,
       },
       {
         name: "Cáp sạc nhanh USB-C 100W",
@@ -367,6 +382,7 @@ async function seedData() {
         featured: false,
         status: "Còn hàng",
         warranty: "12 tháng",
+        warranty_period: 12,
       },
     ]);
     console.log(`   ✅ Đã tạo ${products.length} products`);

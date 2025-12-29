@@ -1,0 +1,75 @@
+@startuml
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Arial"
+skinparam defaultFontSize 11
+
+title SƠ ĐỒ CƠ SỞ DỮ LIỆU
+
+entity "Users" {
+  * _id
+  * email
+  * password
+  * full_name
+  --
+  Note: Quản trị viên
+}
+
+entity "Customers" {
+  * _id
+  * email
+  * password
+  * full_name
+  * phone
+  * address
+  --
+  Note: Khách hàng
+}
+
+entity "Categories" {
+  * _id
+  * title
+  * slug
+  --
+  Note: Danh mục
+}
+
+entity "Products" {
+  * _id
+  * name
+  * price
+  * stock
+  * cat_id <<FK>>
+  * thumbnail
+  --
+  Note: Sản phẩm
+}
+
+entity "Orders" {
+  * _id
+  * name
+  * email
+  * phone
+  * address
+  * status
+  * is_payment
+  * items[]
+  --
+  Note: Đơn hàng
+}
+
+entity "Comments" {
+  * _id
+  * prd_id <<FK>>
+  * email
+  * body
+  --
+  Note: Bình luận
+}
+
+Products }o--|| Categories : "thuộc"
+Comments }o--|| Products : "bình luận"
+Orders ||--o{ Products : "chứa"
+
+@enduml
+

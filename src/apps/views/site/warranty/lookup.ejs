@@ -1,0 +1,193 @@
+<%- include("../layouts/head.ejs", {title: "Tra cứu bảo hành"})%>
+<%- include("../layouts/header.ejs")%>
+<%- include("../layouts/menu.ejs")%>
+<%- include("../layouts/slider.ejs")%>
+
+<style>
+    /* Modern Lookup Styles - Đồng nhất với historyOrder */
+    #lookup-container {
+        background: #f8f9fa;
+        padding: 40px 0;
+        min-height: 500px;
+    }
+
+    .lookup-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 15px;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .lookup-header h1 {
+        margin: 0;
+        font-size: 32px;
+        font-weight: 700;
+    }
+
+    .lookup-header p {
+        margin: 10px 0 0 0;
+        opacity: 0.9;
+        font-size: 16px;
+    }
+
+    .lookup-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+        padding: 40px;
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .lookup-form {
+        margin-top: 30px;
+    }
+
+    .form-group-custom {
+        margin-bottom: 25px;
+    }
+
+    .form-group-custom label {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 10px;
+        display: block;
+        font-size: 16px;
+    }
+
+    .form-control-custom {
+        width: 100%;
+        padding: 15px;
+        border: 2px solid #dee2e6;
+        border-radius: 8px;
+        font-size: 16px;
+        transition: all 0.3s;
+    }
+
+    .form-control-custom:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .btn-lookup {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        padding: 15px 40px;
+        border-radius: 8px;
+        font-weight: 600;
+        border: none;
+        width: 100%;
+        font-size: 16px;
+        transition: all 0.3s;
+        cursor: pointer;
+    }
+
+    .btn-lookup:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .alert-error {
+        background: #f8d7da;
+        color: #842029;
+        padding: 15px;
+        border-radius: 8px;
+        border-left: 4px solid #dc3545;
+        margin-bottom: 20px;
+    }
+
+    .info-box {
+        background: #e7f3ff;
+        padding: 20px;
+        border-radius: 10px;
+        border-left: 4px solid #667eea;
+        margin-bottom: 25px;
+    }
+
+    .info-box h4 {
+        color: #667eea;
+        margin-top: 0;
+        margin-bottom: 10px;
+    }
+
+    .info-box p {
+        color: #6c757d;
+        margin-bottom: 0;
+        font-size: 14px;
+    }
+
+    .info-box ul {
+        margin: 10px 0 0 0;
+        padding-left: 20px;
+        color: #6c757d;
+    }
+
+    .info-box li {
+        margin-bottom: 5px;
+    }
+</style>
+
+<div id="lookup-container">
+    <div class="container">
+        <div class="lookup-header">
+            <h1><i class="fas fa-search"></i> Tra cứu bảo hành</h1>
+            <p>Nhập mã đơn hàng để xem thông tin bảo hành của sản phẩm</p>
+        </div>
+
+        <div class="lookup-card">
+            <div class="info-box">
+                <h4><i class="fas fa-info-circle"></i> Hướng dẫn tra cứu</h4>
+                <p>Để tra cứu bảo hành, bạn cần:</p>
+                <ul>
+                    <li>Đơn hàng đã được giao hàng (trạng thái "Đã giao hàng")</li>
+                    <li>Mã đơn hàng được hiển thị trong trang "Lịch sử đơn hàng"</li>
+                    <li>Nhập mã đơn hàng vào ô bên dưới và nhấn "Tra cứu"</li>
+                </ul>
+            </div>
+
+            <% if (error) { %>
+                <div class="alert-error">
+                    <i class="fas fa-exclamation-circle"></i> <%= error %>
+                </div>
+            <% } %>
+
+            <form action="/warranty/lookup" method="POST" class="lookup-form">
+                <div class="form-group-custom">
+                    <label for="orderId">
+                        <i class="fas fa-barcode"></i> Mã đơn hàng
+                    </label>
+                    <input 
+                        type="text" 
+                        id="orderId" 
+                        name="orderId" 
+                        class="form-control-custom" 
+                        placeholder="Nhập mã đơn hàng (ví dụ: 65a1b2c3d4e5f6g7h8i9j0k1)"
+                        value="<%= orderId %>"
+                        required
+                        autofocus
+                    >
+                    <small style="color: #6c757d; margin-top: 5px; display: block;">
+                        <i class="fas fa-lightbulb"></i> Mã đơn hàng có thể tìm thấy trong trang "Lịch sử đơn hàng" khi đơn hàng đã được giao
+                    </small>
+                </div>
+
+                <button type="submit" class="btn-lookup">
+                    <i class="fas fa-search"></i> Tra cứu bảo hành
+                </button>
+            </form>
+
+            <div style="text-align: center; margin-top: 30px;">
+                <a href="/historyOrder" style="color: #667eea; text-decoration: none;">
+                    <i class="fas fa-arrow-left"></i> Quay lại lịch sử đơn hàng
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include("../layouts/sidebar.ejs")%>
+<%- include("../layouts/footer.ejs")%>
+

@@ -1,360 +1,723 @@
-<%- include("../layout/head.ejs", {title: "Thống Kê Đơn Hàng"})%>
-<%- include("../layout/header.ejs")%>
-<%- include("../layout/sidebar.ejs")%>
+<%- include("../layout/head.ejs", {title: "Thống Kê Đơn Hàng" })%>
+    <%- include("../layout/header.ejs")%>
+        <%- include("../layout/sidebar.ejs")%>
 
-<div class="col-sm-9 col-sm-offset-3 col-lg-10 col-lg-offset-2 main">
-    <div class="row">
-        <ol class="breadcrumb">
-            <li><a href="#"><svg class="glyph stroked home"><use xlink:href="#stroked-home"></use></svg></a></li>
-            <li class="active">Thống kê đơn hàng</li>
-        </ol>
-    </div><!--/.row-->
+            <div class="col-sm-9 col-sm-offset-3 col-lg-10 col-lg-offset-2 main">
+                <div class="row">
+                    <ol class="breadcrumb">
+                        <li><a href="#"><svg class="glyph stroked home">
+                                    <use xlink:href="#stroked-home"></use>
+                                </svg></a></li>
+                        <li class="active">Thống kê đơn hàng</li>
+                    </ol>
+                </div><!--/.row-->
 
-    <div class="row">
-        <div class="col-lg-12">
-            <h1 class="page-header">Thống kê đơn hàng</h1>
-        </div>
-    </div><!--/.row-->
+                <div class="row">
+                    <div class="col-lg-12">
+                        <h1 class="page-header">Thống kê đơn hàng</h1>
+                    </div>
+                </div><!--/.row-->
 
-    <!-- Bộ lọc thời gian -->
-    <div class="row">
-        <div class="col-lg-12">
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <svg class="glyph stroked calendar"><use xlink:href="#stroked-calendar"></use></svg> Bộ lọc thời gian
-                </div>
-                <div class="panel-body">
-                    <form method="GET" action="/admin/statistics" class="form-inline">
-                        <div class="form-group" style="margin-right: 10px;">
-                            <label>Khoảng thời gian: </label>
-                            <select name="period" class="form-control" onchange="this.form.submit()" style="margin-left: 10px;">
-                                <option value="all" <%= period === 'all' || !period ? 'selected' : '' %>>Tất cả</option>
-                                <option value="today" <%= period === 'today' ? 'selected' : '' %>>Hôm nay</option>
-                                <option value="week" <%= period === 'week' ? 'selected' : '' %>>Tuần này</option>
-                                <option value="month" <%= period === 'month' ? 'selected' : '' %>>Tháng này</option>
-                                <option value="year" <%= period === 'year' ? 'selected' : '' %>>Năm nay</option>
-                            </select>
+                <!-- Bộ lọc thời gian -->
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <svg class="glyph stroked calendar">
+                                    <use xlink:href="#stroked-calendar"></use>
+                                </svg> Bộ lọc thời gian
+                            </div>
+                            <div class="panel-body">
+                                <form method="GET" action="/admin/statistics" class="form-inline">
+                                    <div class="form-group" style="margin-right: 10px;">
+                                        <label>Khoảng thời gian: </label>
+                                        <select name="period" class="form-control" onchange="this.form.submit()"
+                                            style="margin-left: 10px;">
+                                            <option value="all" <%=period==='all' || !period ? 'selected' : '' %>>Tất cả
+                                            </option>
+                                            <option value="today" <%=period==='today' ? 'selected' : '' %>>Hôm nay
+                                            </option>
+                                            <option value="week" <%=period==='week' ? 'selected' : '' %>>Tuần này
+                                            </option>
+                                            <option value="month" <%=period==='month' ? 'selected' : '' %>>Tháng này
+                                            </option>
+                                            <option value="year" <%=period==='year' ? 'selected' : '' %>>Năm nay
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group" style="margin-right: 10px;">
+                                        <label>Từ ngày: </label>
+                                        <input type="date" name="startDate" value="<%= startDate %>"
+                                            class="form-control" style="margin-left: 10px;">
+                                    </div>
+                                    <div class="form-group" style="margin-right: 10px;">
+                                        <label>Đến ngày: </label>
+                                        <input type="date" name="endDate" value="<%= endDate %>" class="form-control"
+                                            style="margin-left: 10px;">
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Lọc</button>
+                                    <a href="/admin/statistics" class="btn btn-default">Xóa bộ lọc</a>
+                                </form>
+                                <p class="text-muted" style="margin-top: 10px;">
+                                    <strong>Khoảng thời gian: </strong>
+                                    <%= periodLabel %>
+                                </p>
+                            </div>
                         </div>
-                        <div class="form-group" style="margin-right: 10px;">
-                            <label>Từ ngày: </label>
-                            <input type="date" name="startDate" value="<%= startDate %>" class="form-control" style="margin-left: 10px;">
+                    </div>
+                </div>
+
+                <!-- Tổng quan -->
+                <div class="row">
+                    <div class="col-xs-12 col-md-6 col-lg-3">
+                        <div class="panel panel-blue panel-widget">
+                            <div class="row no-padding">
+                                <div class="col-sm-3 col-lg-5 widget-left">
+                                    <svg class="glyph stroked bag">
+                                        <use xlink:href="#stroked-bag"></use>
+                                    </svg>
+                                </div>
+                                <div class="col-sm-9 col-lg-7 widget-right">
+                                    <div class="large">
+                                        <%= totalOrders %>
+                                    </div>
+                                    <div class="text-muted">Tổng đơn hàng</div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="form-group" style="margin-right: 10px;">
-                            <label>Đến ngày: </label>
-                            <input type="date" name="endDate" value="<%= endDate %>" class="form-control" style="margin-left: 10px;">
+                    </div>
+                    <div class="col-xs-12 col-md-6 col-lg-3">
+                        <div class="panel panel-green panel-widget">
+                            <div class="row no-padding">
+                                <div class="col-sm-3 col-lg-5 widget-left">
+                                    <svg class="glyph stroked app-window-with-content">
+                                        <use xlink:href="#stroked-app-window-with-content"></use>
+                                    </svg>
+                                </div>
+                                <div class="col-sm-9 col-lg-7 widget-right">
+                                    <div class="large">
+                                        <%= (totalRevenue / 1000000).toFixed(1) %>M
+                                    </div>
+                                    <div class="text-muted" style="white-space: nowrap; font-size: 12px;">Tổng doanh thu
+                                        (VNĐ)</div>
+                                </div>
+                            </div>
                         </div>
-                        <button type="submit" class="btn btn-primary">Lọc</button>
-                        <a href="/admin/statistics" class="btn btn-default">Xóa bộ lọc</a>
-                    </form>
-                    <p class="text-muted" style="margin-top: 10px;">
-                        <strong>Khoảng thời gian: </strong><%= periodLabel %>
-                    </p>
-                </div>
-            </div>
-        </div>
-    </div>
+                    </div>
+                    <div class="col-xs-12 col-md-6 col-lg-3">
+                        <div class="panel panel-teal panel-widget">
+                            <div class="row no-padding">
+                                <div class="col-sm-3 col-lg-5 widget-left">
+                                    <svg class="glyph stroked checkmark">
+                                        <use xlink:href="#stroked-checkmark"></use>
+                                    </svg>
+                                </div>
+                                <div class="col-sm-9 col-lg-7 widget-right">
+                                    <div class="large">
+                                        <%= paidOrders %>
+                                    </div>
+                                    <div class="text-muted">Đã thanh toán</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xs-12 col-md-6 col-lg-3">
+                        <div class="panel panel-orange panel-widget">
+                            <div class="row no-padding">
+                                <div class="col-sm-3 col-lg-5 widget-left">
+                                    <svg class="glyph stroked clock">
+                                        <use xlink:href="#stroked-clock"></use>
+                                    </svg>
+                                </div>
+                                <div class="col-sm-9 col-lg-7 widget-right">
+                                    <div class="large">
+                                        <%= unpaidOrders %>
+                                    </div>
+                                    <div class="text-muted">Chưa thanh toán</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div><!--/.row-->
 
-    <!-- Tổng quan -->
-    <div class="row">
-        <div class="col-xs-12 col-md-6 col-lg-3">
-            <div class="panel panel-blue panel-widget">
-                <div class="row no-padding">
-                    <div class="col-sm-3 col-lg-5 widget-left">
-                        <svg class="glyph stroked bag"><use xlink:href="#stroked-bag"></use></svg>
-                    </div>
-                    <div class="col-sm-9 col-lg-7 widget-right">
-                        <div class="large"><%= totalOrders %></div>
-                        <div class="text-muted">Tổng đơn hàng</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-xs-12 col-md-6 col-lg-3">
-            <div class="panel panel-green panel-widget">
-                <div class="row no-padding">
-                    <div class="col-sm-3 col-lg-5 widget-left">
-                        <svg class="glyph stroked app-window-with-content"><use xlink:href="#stroked-app-window-with-content"></use></svg>
-                    </div>
-                    <div class="col-sm-9 col-lg-7 widget-right">
-                        <div class="large"><%= (totalRevenue / 1000000).toFixed(1) %>M</div>
-                        <div class="text-muted" style="white-space: nowrap; font-size: 12px;">Tổng doanh thu (VNĐ)</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-xs-12 col-md-6 col-lg-3">
-            <div class="panel panel-teal panel-widget">
-                <div class="row no-padding">
-                    <div class="col-sm-3 col-lg-5 widget-left">
-                        <svg class="glyph stroked checkmark"><use xlink:href="#stroked-checkmark"></use></svg>
-                    </div>
-                    <div class="col-sm-9 col-lg-7 widget-right">
-                        <div class="large"><%= paidOrders %></div>
-                        <div class="text-muted">Đã thanh toán</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-xs-12 col-md-6 col-lg-3">
-            <div class="panel panel-orange panel-widget">
-                <div class="row no-padding">
-                    <div class="col-sm-3 col-lg-5 widget-left">
-                        <svg class="glyph stroked clock"><use xlink:href="#stroked-clock"></use></svg>
-                    </div>
-                    <div class="col-sm-9 col-lg-7 widget-right">
-                        <div class="large"><%= unpaidOrders %></div>
-                        <div class="text-muted">Chưa thanh toán</div>
+                <!-- Biểu đồ -->
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <svg class="glyph stroked line-graph">
+                                    <use xlink:href="#stroked-line-graph"></use>
+                                </svg> Biểu đồ doanh thu và đơn hàng
+                            </div>
+                            <div class="panel-body" style="position: relative; height: 400px; overflow: hidden;">
+                                <canvas id="revenueChart"></canvas>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div><!--/.row-->
 
-    <!-- Biểu đồ -->
-    <div class="row">
-        <div class="col-lg-12">
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <svg class="glyph stroked line-graph"><use xlink:href="#stroked-line-graph"></use></svg> Biểu đồ doanh thu và đơn hàng
-                </div>
-                <div class="panel-body" style="position: relative; height: 350px;">
-                    <canvas id="revenueChart" style="max-height: 100%;"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
+                <!-- Thống kê chi tiết -->
+                <div class="row">
+                    <!-- Thống kê theo trạng thái -->
+                    <div class="col-lg-6">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <svg class="glyph stroked app-window-with-content">
+                                    <use xlink:href="#stroked-app-window-with-content"></use>
+                                </svg> Thống kê theo trạng thái
+                            </div>
+                            <div class="panel-body">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Trạng thái</th>
+                                            <th>Số lượng</th>
+                                            <th>Doanh thu</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% Object.keys(statusStats).forEach(status=> { %>
+                                            <tr>
+                                                <td>
+                                                    <%= status %>
+                                                </td>
+                                                <td>
+                                                    <%= statusStats[status].count %>
+                                                </td>
+                                                <td>
+                                                    <%= statusStats[status].revenue.toLocaleString('vi-VN') %> đ
+                                                </td>
+                                            </tr>
+                                            <% }) %>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
 
-    <!-- Thống kê chi tiết -->
-    <div class="row">
-        <!-- Thống kê theo trạng thái -->
-        <div class="col-lg-6">
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <svg class="glyph stroked app-window-with-content"><use xlink:href="#stroked-app-window-with-content"></use></svg> Thống kê theo trạng thái
+                    <!-- Thống kê theo phương thức thanh toán -->
+                    <div class="col-lg-6">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <svg class="glyph stroked app-window-with-content">
+                                    <use xlink:href="#stroked-app-window-with-content"></use>
+                                </svg> Thống kê theo phương thức thanh toán
+                            </div>
+                            <div class="panel-body" style="position: relative; height: 300px; overflow: hidden;">
+                                <canvas id="paymentChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="panel-body">
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>Trạng thái</th>
-                                <th>Số lượng</th>
-                                <th>Doanh thu</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <% Object.keys(statusStats).forEach(status => { %>
-                                <tr>
-                                    <td><%= status %></td>
-                                    <td><%= statusStats[status].count %></td>
-                                    <td><%= statusStats[status].revenue.toLocaleString('vi-VN') %> đ</td>
-                                </tr>
-                            <% }) %>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
 
-        <!-- Thống kê theo phương thức thanh toán -->
-        <div class="col-lg-6">
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <svg class="glyph stroked app-window-with-content"><use xlink:href="#stroked-app-window-with-content"></use></svg> Thống kê theo phương thức thanh toán
+                <!-- Sản phẩm bán chạy -->
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <svg class="glyph stroked bag">
+                                    <use xlink:href="#stroked-bag"></use>
+                                </svg> Top 10 sản phẩm bán chạy
+                            </div>
+                            <div class="panel-body">
+                                <table class="table table-bordered table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>STT</th>
+                                            <th>Tên sản phẩm</th>
+                                            <th>Số lượng bán</th>
+                                            <th>Doanh thu</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% topProducts.forEach((product, index)=> { %>
+                                            <tr>
+                                                <td>
+                                                    <%= index + 1 %>
+                                                </td>
+                                                <td>
+                                                    <%= product.name %>
+                                                </td>
+                                                <td>
+                                                    <%= product.quantity %>
+                                                </td>
+                                                <td>
+                                                    <%= product.revenue.toLocaleString('vi-VN') %> đ
+                                                </td>
+                                            </tr>
+                                            <% }) %>
+                                                <% if (topProducts.length===0) { %>
+                                                    <tr>
+                                                        <td colspan="4" class="text-center">Chưa có dữ liệu</td>
+                                                    </tr>
+                                                    <% } %>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="panel-body">
-                    <canvas id="paymentChart" height="200"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Sản phẩm bán chạy -->
-    <div class="row">
-        <div class="col-lg-12">
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <svg class="glyph stroked bag"><use xlink:href="#stroked-bag"></use></svg> Top 10 sản phẩm bán chạy
+                <!-- Khách hàng VIP -->
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <svg class="glyph stroked male-user">
+                                    <use xlink:href="#stroked-male-user"></use>
+                                </svg> Top 10 khách hàng VIP
+                            </div>
+                            <div class="panel-body">
+                                <table class="table table-bordered table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>STT</th>
+                                            <th>Tên khách hàng</th>
+                                            <th>Email</th>
+                                            <th>Số đơn hàng</th>
+                                            <th>Tổng giá trị</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% topCustomers.forEach((customer, index)=> { %>
+                                            <tr>
+                                                <td>
+                                                    <%= index + 1 %>
+                                                </td>
+                                                <td>
+                                                    <%= customer.name %>
+                                                </td>
+                                                <td>
+                                                    <%= customer.email %>
+                                                </td>
+                                                <td>
+                                                    <%= customer.orders %>
+                                                </td>
+                                                <td>
+                                                    <%= customer.revenue.toLocaleString('vi-VN') %> đ
+                                                </td>
+                                            </tr>
+                                            <% }) %>
+                                                <% if (topCustomers.length===0) { %>
+                                                    <tr>
+                                                        <td colspan="5" class="text-center">Chưa có dữ liệu</td>
+                                                    </tr>
+                                                    <% } %>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="panel-body">
-                    <table class="table table-bordered table-hover">
-                        <thead>
-                            <tr>
-                                <th>STT</th>
-                                <th>Tên sản phẩm</th>
-                                <th>Số lượng bán</th>
-                                <th>Doanh thu</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <% topProducts.forEach((product, index) => { %>
-                                <tr>
-                                    <td><%= index + 1 %></td>
-                                    <td><%= product.name %></td>
-                                    <td><%= product.quantity %></td>
-                                    <td><%= product.revenue.toLocaleString('vi-VN') %> đ</td>
-                                </tr>
-                            <% }) %>
-                            <% if (topProducts.length === 0) { %>
-                                <tr>
-                                    <td colspan="4" class="text-center">Chưa có dữ liệu</td>
-                                </tr>
-                            <% } %>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Khách hàng VIP -->
-    <div class="row">
-        <div class="col-lg-12">
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <svg class="glyph stroked male-user"><use xlink:href="#stroked-male-user"></use></svg> Top 10 khách hàng VIP
+                <!-- Đơn hàng gần đây -->
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">
+                                <svg class="glyph stroked clock">
+                                    <use xlink:href="#stroked-clock"></use>
+                                </svg> Đơn hàng gần đây
+                            </div>
+                            <div class="panel-body">
+                                <table class="table table-bordered table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>STT</th>
+                                            <th>Khách hàng</th>
+                                            <th>Email</th>
+                                            <th>Ngày đặt</th>
+                                            <th>Tổng tiền</th>
+                                            <th>Trạng thái</th>
+                                            <th>Thanh toán</th>
+                                            <th>Chi tiết</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% recentOrders.forEach((order, index)=> { %>
+                                            <tr>
+                                                <td>
+                                                    <%= index + 1 %>
+                                                </td>
+                                                <td>
+                                                    <%= order.name %>
+                                                </td>
+                                                <td>
+                                                    <%= order.email %>
+                                                </td>
+                                                <td>
+                                                    <%= moment(order.createdAt).format('DD/MM/YYYY HH:mm') %>
+                                                </td>
+                                                <td>
+                                                    <%= order.total.toLocaleString('vi-VN') %> đ
+                                                </td>
+                                                <td>
+                                                    <%= order.status %>
+                                                </td>
+                                                <td>
+                                                    <% if (order.is_payment) { %>
+                                                        <span class="label label-success">Đã thanh toán</span>
+                                                        <% } else { %>
+                                                            <span class="label label-warning">Chưa thanh toán</span>
+                                                            <% } %>
+                                                </td>
+                                                <td>
+                                                    <a href="/admin/orders/<%= order._id %>"
+                                                        class="btn btn-info btn-sm">
+                                                        <i class="glyphicon glyphicon-eye-open"></i>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            <% }) %>
+                                                <% if (recentOrders.length===0) { %>
+                                                    <tr>
+                                                        <td colspan="8" class="text-center">Chưa có đơn hàng nào</td>
+                                                    </tr>
+                                                    <% } %>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="panel-body">
-                    <table class="table table-bordered table-hover">
-                        <thead>
-                            <tr>
-                                <th>STT</th>
-                                <th>Tên khách hàng</th>
-                                <th>Email</th>
-                                <th>Số đơn hàng</th>
-                                <th>Tổng giá trị</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <% topCustomers.forEach((customer, index) => { %>
-                                <tr>
-                                    <td><%= index + 1 %></td>
-                                    <td><%= customer.name %></td>
-                                    <td><%= customer.email %></td>
-                                    <td><%= customer.orders %></td>
-                                    <td><%= customer.revenue.toLocaleString('vi-VN') %> đ</td>
-                                </tr>
-                            <% }) %>
-                            <% if (topCustomers.length === 0) { %>
-                                <tr>
-                                    <td colspan="5" class="text-center">Chưa có dữ liệu</td>
-                                </tr>
-                            <% } %>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
+            </div><!--/.main-->
 
-    <!-- Đơn hàng gần đây -->
-    <div class="row">
-        <div class="col-lg-12">
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <svg class="glyph stroked clock"><use xlink:href="#stroked-clock"></use></svg> Đơn hàng gần đây
-                </div>
-                <div class="panel-body">
-                    <table class="table table-bordered table-hover">
-                        <thead>
-                            <tr>
-                                <th>STT</th>
-                                <th>Khách hàng</th>
-                                <th>Email</th>
-                                <th>Ngày đặt</th>
-                                <th>Tổng tiền</th>
-                                <th>Trạng thái</th>
-                                <th>Thanh toán</th>
-                                <th>Chi tiết</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <% recentOrders.forEach((order, index) => { %>
-                                <tr>
-                                    <td><%= index + 1 %></td>
-                                    <td><%= order.name %></td>
-                                    <td><%= order.email %></td>
-                                    <td><%= moment(order.createdAt).format('DD/MM/YYYY HH:mm') %></td>
-                                    <td><%= order.total.toLocaleString('vi-VN') %> đ</td>
-                                    <td><%= order.status %></td>
-                                    <td>
-                                        <% if (order.is_payment) { %>
-                                            <span class="label label-success">Đã thanh toán</span>
-                                        <% } else { %>
-                                            <span class="label label-warning">Chưa thanh toán</span>
-                                        <% } %>
-                                    </td>
-                                    <td>
-                                        <a href="/admin/orders/<%= order._id %>" class="btn btn-info btn-sm">
-                                            <i class="glyphicon glyphicon-eye-open"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                            <% }) %>
-                            <% if (recentOrders.length === 0) { %>
-                                <tr>
-                                    <td colspan="8" class="text-center">Chưa có đơn hàng nào</td>
-                                </tr>
-                            <% } %>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-</div><!--/.main-->
+            <script src="js/jquery-1.11.1.min.js"></script>
+            <script src="js/bootstrap.min.js"></script>
+            <script src="js/chart.min.js"></script>
+            <style>
+                /* Fix layout cho biểu đồ - Responsive và không bị vỡ */
+                #revenueChart {
+                    max-width: 100%;
+                    height: 100% !important;
+                    width: 100% !important;
+                }
 
-<script src="js/jquery-1.11.1.min.js"></script>
-<script src="js/bootstrap.min.js"></script>
-<script src="js/chart.min.js"></script>
-<script>
-    // Đợi DOM và Chart.js load xong
-    (function() {
-        // Dữ liệu cho biểu đồ doanh thu
-        const dailyData = <%- JSON.stringify(dailyStats || []) %>;
-        
-        function initCharts() {
-            // Kiểm tra Chart.js đã load chưa
+                #paymentChart {
+                    max-width: 100%;
+                    height: 100% !important;
+                    width: 100% !important;
+                }
+
+                .panel-body {
+                    overflow: hidden;
+                    position: relative;
+                }
+
+                /* Đảm bảo các card không bị vỡ */
+                .panel-widget {
+                    min-height: 100px;
+                }
+
+                .panel-widget .large {
+                    font-size: 2em;
+                    font-weight: bold;
+                    word-break: break-word;
+                }
+
+                /* Fix table responsive */
+                .table {
+                    width: 100%;
+                    table-layout: auto;
+                }
+
+                .table th,
+                .table td {
+                    word-wrap: break-word;
+                    overflow-wrap: break-word;
+                }
+
+                /* Responsive cho mobile */
+                @media (max-width: 768px) {
+                    .panel-body {
+                        padding: 10px;
+                    }
+
+                    .panel-body[style*="height"] {
+                        height: 300px !important;
+                    }
+
+                    .col-lg-6 {
+                        margin-bottom: 20px;
+                    }
+
+                    .large {
+                        font-size: 1.5em !important;
+                    }
+
+                    .text-muted {
+                        font-size: 10px !important;
+                    }
+                }
+
+                /* Fix cho biểu đồ trên màn hình nhỏ */
+                @media (max-width: 480px) {
+                    .panel-body[style*="height"] {
+                        height: 250px !important;
+                    }
+                }
+            </style>
+            <script>
+                // Đợi DOM và Chart.js load xong
+                (function () {
+        // Dữ liệu cho biểu đồ doanh thu - lấy từ server (initial load)
+        <% if (typeof dailyStats !== 'undefined' && dailyStats) { %>
+        const initialDailyData = <%- JSON.stringify(dailyStats) %>;
+        <% } else { %>
+        const initialDailyData = [];
+        <% } %>
+
+        // Dữ liệu phương thức thanh toán - lấy từ server (initial load)
+        <% if (typeof paymentStats !== 'undefined' && paymentStats) { %>
+        const initialPaymentStats = <%- JSON.stringify(paymentStats) %>;
+        <% } else { %>
+        const initialPaymentStats = { momo: { count: 0, revenue: 0 }, cash: { count: 0, revenue: 0 } };
+        <% } %>
+
+        // Lưu trữ dữ liệu hiện tại
+        let currentDailyData = initialDailyData;
+        let currentPaymentStats = initialPaymentStats;
+
+        // Hàm load dữ liệu từ API
+        function loadChartData() {
+            const form = document.querySelector('form[action="/admin/statistics"]');
+            if (!form) return;
+
+            const period = form.querySelector('select[name="period"]')?.value || 'all';
+            const startDate = form.querySelector('input[name="startDate"]')?.value || '';
+            const endDate = form.querySelector('input[name="endDate"]')?.value || '';
+
+            // Xây dựng URL với query params
+            let url = '/admin/statistics/chart-data?type=daily';
+            if (startDate && endDate) {
+                url += '&startDate=' + encodeURIComponent(startDate) + '&endDate=' + encodeURIComponent(endDate);
+            } else {
+                url += '&period=' + encodeURIComponent(period);
+            }
+
+            console.log('🔄 Đang load dữ liệu từ API:', url);
+
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('✅ Dữ liệu đã load từ API:', data);
+                    if (data.chartData) {
+                        currentDailyData = data.chartData;
+                    }
+                    if (data.paymentStats) {
+                        currentPaymentStats = data.paymentStats;
+                    }
+                    // Cập nhật biểu đồ với dữ liệu mới
+                    updateCharts();
+                })
+                .catch(error => {
+                    console.error('❌ Lỗi khi load dữ liệu từ API:', error);
+                    // Vẫn sử dụng dữ liệu ban đầu
+                    updateCharts();
+                });
+        }
+
+        // Hàm cập nhật biểu đồ với dữ liệu hiện tại
+        function updateCharts() {
+            console.log('🔄 updateCharts được gọi');
+            console.log('📊 currentDailyData:', currentDailyData);
+            console.log('💳 currentPaymentStats:', currentPaymentStats);
+            
             if (typeof Chart === 'undefined') {
-                console.error('Chart.js chưa được load! Vui lòng kiểm tra lại.');
-                setTimeout(initCharts, 200); // Thử lại sau 200ms
+                console.error('❌ Chart.js chưa được load!');
                 return;
             }
 
-            // Kiểm tra canvas element
             const revenueCanvas = document.getElementById("revenueChart");
             const paymentCanvas = document.getElementById("paymentChart");
-            
+
             if (!revenueCanvas) {
-                console.error('Canvas revenueChart không tồn tại!');
-                return;
+                console.error('❌ Canvas revenueChart không tồn tại!');
             }
-            
             if (!paymentCanvas) {
-                console.error('Canvas paymentChart không tồn tại!');
+                console.error('❌ Canvas paymentChart không tồn tại!');
+            }
+            if (!revenueCanvas || !paymentCanvas) {
                 return;
             }
 
-            // Xử lý dữ liệu
+            // Cập nhật biểu đồ doanh thu
+            updateRevenueChart(revenueCanvas, currentDailyData);
+            
+            // Cập nhật biểu đồ phương thức thanh toán
+            updatePaymentChart(paymentCanvas, currentPaymentStats);
+        }
+
+        // Hàm cập nhật biểu đồ doanh thu
+        function updateRevenueChart(canvas, dailyData) {
+            console.log('📊 updateRevenueChart được gọi với dữ liệu:', dailyData);
+            
             let labels = [];
             let revenueData = [];
             let ordersData = [];
-            
-            if (dailyData && dailyData.length > 0) {
-                labels = dailyData.map(item => item.dateLabel || item.date);
-                revenueData = dailyData.map(item => parseFloat((item.revenue / 1000000).toFixed(2))); // Chuyển sang triệu VNĐ
-                ordersData = dailyData.map(item => parseInt(item.orders) || 0);
+
+            if (dailyData && Array.isArray(dailyData) && dailyData.length > 0) {
+                console.log('📊 Có dữ liệu, số lượng:', dailyData.length);
+                
+                // Sắp xếp lại theo ngày
+                const sortedData = dailyData.slice().sort((a, b) => {
+                    // Xử lý date format: có thể là "YYYY-MM-DD" hoặc "DD/MM/YYYY"
+                    let dateA, dateB;
+                    if (a.date) {
+                        dateA = new Date(a.date);
+                    } else if (a.dateLabel) {
+                        // Parse "DD/MM/YYYY" format
+                        const parts = a.dateLabel.split('/');
+                        if (parts.length === 3) {
+                            dateA = new Date(parts[2], parts[1] - 1, parts[0]);
+                        } else {
+                            dateA = new Date(a.dateLabel);
+                        }
+                    } else {
+                        dateA = new Date(0);
+                    }
+                    
+                    if (b.date) {
+                        dateB = new Date(b.date);
+                    } else if (b.dateLabel) {
+                        const parts = b.dateLabel.split('/');
+                        if (parts.length === 3) {
+                            dateB = new Date(parts[2], parts[1] - 1, parts[0]);
+                        } else {
+                            dateB = new Date(b.dateLabel);
+                        }
+                    } else {
+                        dateB = new Date(0);
+                    }
+                    
+                    return dateA - dateB;
+                });
+
+                labels = sortedData.map(item => {
+                    // Đảm bảo label là string, không phải object
+                    let label = '';
+                    if (item.dateLabel) {
+                        label = String(item.dateLabel);
+                    } else if (item.date) {
+                        // Format date từ "YYYY-MM-DD" sang "DD/MM/YYYY"
+                        const dateParts = String(item.date).split('-');
+                        if (dateParts.length === 3) {
+                            label = dateParts[2] + '/' + dateParts[1] + '/' + dateParts[0];
+                        } else {
+                            label = String(item.date);
+                        }
+                    }
+                    return label || '';
+                });
+                
+                revenueData = sortedData.map(item => {
+                    const rev = parseFloat(item.revenue) || 0;
+                    const result = parseFloat((rev / 1000000).toFixed(2));
+                    return isNaN(result) ? 0 : result;
+                });
+                
+                ordersData = sortedData.map(item => {
+                    const ord = parseInt(item.orders) || 0;
+                    return isNaN(ord) ? 0 : ord;
+                });
+                
+                // Đảm bảo tất cả arrays có cùng độ dài
+                const maxLength = Math.max(labels.length, revenueData.length, ordersData.length);
+                while (labels.length < maxLength) labels.push('');
+                while (revenueData.length < maxLength) revenueData.push(0);
+                while (ordersData.length < maxLength) ordersData.push(0);
+                
+                console.log('📊 Dữ liệu đã xử lý:', {
+                    labels: labels,
+                    labelsType: labels.map(l => typeof l),
+                    revenueData: revenueData,
+                    ordersData: ordersData,
+                    sampleItem: sortedData[0]
+                });
             } else {
-                // Nếu không có dữ liệu, tạo dữ liệu mẫu để hiển thị
+                console.warn('⚠️ Không có dữ liệu hoặc dữ liệu không hợp lệ');
                 labels = ['Chưa có dữ liệu'];
                 revenueData = [0];
                 ordersData = [0];
             }
             
-            console.log('Dữ liệu biểu đồ:', { labels, revenueData, ordersData, dailyData });
+            // Xử lý đặc biệt khi chỉ có 1 điểm dữ liệu - Chart.js cần ít nhất 2 điểm để vẽ đường
+            if (labels.length === 1 && labels[0] !== 'Chưa có dữ liệu') {
+                console.log('📊 Chỉ có 1 điểm dữ liệu, thêm điểm thứ 2 để Chart.js có thể vẽ');
+                // Thêm một điểm trước đó với giá trị 0 để biểu đồ có thể vẽ được
+                const singleLabel = labels[0];
+                const singleRevenue = revenueData[0];
+                const singleOrders = ordersData[0];
+                
+                // Tạo label cho điểm trước đó (ngày hôm trước)
+                let prevLabel = '';
+                if (singleLabel.includes('/')) {
+                    const parts = singleLabel.split('/');
+                    if (parts.length === 3) {
+                        const date = new Date(parts[2], parts[1] - 1, parts[0]);
+                        date.setDate(date.getDate() - 1);
+                        prevLabel = String(date.getDate()).padStart(2, '0') + '/' + 
+                                   String(date.getMonth() + 1).padStart(2, '0') + '/' + 
+                                   date.getFullYear();
+                    } else {
+                        prevLabel = singleLabel;
+                    }
+                } else {
+                    prevLabel = singleLabel;
+                }
+                
+                labels = [prevLabel, singleLabel];
+                revenueData = [0, singleRevenue];
+                ordersData = [0, singleOrders];
+                
+                console.log('📊 Đã thêm điểm thứ 2:', {
+                    labels: labels,
+                    revenueData: revenueData,
+                    ordersData: ordersData
+                });
+            }
 
-            // Biểu đồ doanh thu và đơn hàng (Chart.js 1.x)
+            // Đảm bảo labels là array of strings
+            const cleanLabels = labels.map((label, index) => {
+                if (typeof label === 'object' && label !== null) {
+                    console.warn('⚠️ Label tại index', index, 'là object:', label);
+                    return String(label.dateLabel || label.date || label || '');
+                }
+                return String(label || '');
+            });
+            
+            // Đảm bảo data là array of numbers
+            const cleanRevenueData = revenueData.map((val, index) => {
+                const num = typeof val === 'number' ? val : parseFloat(val) || 0;
+                if (isNaN(num)) {
+                    console.warn('⚠️ Revenue data tại index', index, 'không hợp lệ:', val);
+                    return 0;
+                }
+                return num;
+            });
+            
+            const cleanOrdersData = ordersData.map((val, index) => {
+                const num = typeof val === 'number' ? val : parseInt(val) || 0;
+                if (isNaN(num)) {
+                    console.warn('⚠️ Orders data tại index', index, 'không hợp lệ:', val);
+                    return 0;
+                }
+                return num;
+            });
+            
+            console.log('📊 Dữ liệu cuối cùng trước khi vẽ:', {
+                labels: cleanLabels,
+                revenueData: cleanRevenueData,
+                ordersData: cleanOrdersData
+            });
+            
             const lineChartData = {
-                labels: labels,
+                labels: cleanLabels,
                 datasets: [
                     {
                         label: "Doanh thu (Triệu VNĐ)",
@@ -364,7 +727,7 @@
                         pointStrokeColor: "#fff",
                         pointHighlightFill: "#fff",
                         pointHighlightStroke: "rgba(48, 164, 255, 1)",
-                        data: revenueData
+                        data: cleanRevenueData
                     },
                     {
                         label: "Số đơn hàng",
@@ -374,55 +737,129 @@
                         pointStrokeColor: "#fff",
                         pointHighlightFill: "#fff",
                         pointHighlightStroke: "rgba(255, 181, 62, 1)",
-                        data: ordersData
+                        data: cleanOrdersData
                     }
                 ]
             };
 
             try {
-                const ctxRevenue = revenueCanvas.getContext("2d");
+                const ctxRevenue = canvas.getContext("2d");
+                if (!ctxRevenue) return;
+
+                // Destroy chart cũ
                 if (window.myLine) {
-                    window.myLine.destroy();
+                    try {
+                        window.myLine.destroy();
+                    } catch (e) {
+                        console.warn('Lỗi khi destroy chart cũ:', e);
+                    }
                 }
-                
-                // Đảm bảo có ít nhất 2 điểm để vẽ đường
-                if (labels.length === 0 || revenueData.length === 0) {
-                    console.warn('Không có dữ liệu để vẽ biểu đồ');
-                    return;
-                }
-                
+
+                // Vẽ biểu đồ mới
                 window.myLine = new Chart(ctxRevenue).Line(lineChartData, {
                     responsive: true,
                     maintainAspectRatio: false,
                     scaleShowGridLines: true,
                     scaleGridLineColor: "rgba(0,0,0,.05)",
                     scaleGridLineWidth: 1,
-                    bezierCurve: labels.length > 1, // Chỉ dùng bezier khi có nhiều hơn 1 điểm
+                    bezierCurve: cleanLabels.length > 1 && cleanLabels[0] !== 'Chưa có dữ liệu',
                     bezierCurveTension: 0.4,
-                    pointDot: true,
-                    pointDotRadius: labels.length > 15 ? 3 : 4, // Giảm kích thước nếu có nhiều điểm
+                    pointDot: cleanLabels.length <= 20,
+                    pointDotRadius: cleanLabels.length > 15 ? 3 : 4,
                     pointDotStrokeWidth: 1,
                     pointHitDetectionRadius: 20,
                     datasetStroke: true,
                     datasetStrokeWidth: 2,
-                    datasetFill: true
+                    datasetFill: true,
+                    scaleOverride: false,
+                    scaleSteps: null,
+                    scaleStepWidth: null,
+                    scaleStartValue: 0,
+                    scaleShowLabels: true,
+                    scaleLabel: function (value) {
+                        // Chart.js có thể truyền object hoặc number vào đây
+                        // Đảm bảo luôn trả về string
+                        try {
+                            if (value === null || value === undefined) {
+                                return '';
+                            }
+                            if (typeof value === 'object') {
+                                // Nếu là object, lấy giá trị số
+                                if (value.value !== undefined) {
+                                    return String(value.value);
+                                }
+                                if (value.label !== undefined) {
+                                    return String(value.label);
+                                }
+                                // Fallback: convert to string
+                                return String(value);
+                            }
+                            // Nếu là number hoặc string, convert sang string
+                            return String(value);
+                        } catch (e) {
+                            console.warn('Lỗi trong scaleLabel:', e, 'value:', value);
+                            return String(value || '');
+                        }
+                    },
+                    multiTooltipTemplate: function (label) {
+                        // Đảm bảo tooltip hiển thị đúng format
+                        try {
+                            if (!label) {
+                                return '';
+                            }
+                            
+                            let datasetLabel = '';
+                            let value = '';
+                            
+                            if (typeof label === 'object') {
+                                // Chart.js truyền object với các thuộc tính: datasetLabel, value, label, etc.
+                                datasetLabel = String(label.datasetLabel || label.label || '');
+                                
+                                // Xử lý value - có thể là number hoặc object
+                                if (label.value !== undefined && label.value !== null) {
+                                    if (typeof label.value === 'object') {
+                                        // Nếu value là object, lấy giá trị số từ nó
+                                        value = String(label.value.value || label.value.label || label.value || '');
+                                    } else {
+                                        // Nếu value là number hoặc string
+                                        value = String(label.value);
+                                    }
+                                } else {
+                                    value = '';
+                                }
+                            } else {
+                                // Nếu label là string hoặc number
+                                datasetLabel = String(label);
+                                value = '';
+                            }
+                            
+                            const result = datasetLabel + (value ? ": " + value : '');
+                            return result;
+                        } catch (e) {
+                            console.warn('Lỗi trong multiTooltipTemplate:', e, 'label:', label);
+                            return String(label || '');
+                        }
+                    }
                 });
-                console.log('✅ Biểu đồ doanh thu đã được vẽ thành công');
-            } catch (error) {
-                console.error('Lỗi vẽ biểu đồ doanh thu:', error);
-            }
 
-            // Biểu đồ phương thức thanh toán
-            const momoCount = <%= paymentStats.momo.count || 0 %>;
-            const cashCount = <%= paymentStats.cash.count || 0 %>;
-            
+                console.log('✅ Biểu đồ doanh thu đã được cập nhật với', labels.length, 'điểm dữ liệu');
+            } catch (error) {
+                console.error('❌ Lỗi vẽ biểu đồ doanh thu:', error);
+            }
+        }
+
+        // Hàm cập nhật biểu đồ phương thức thanh toán
+        function updatePaymentChart(canvas, paymentStatsData) {
+            const momoCount = paymentStatsData.momo ? (paymentStatsData.momo.count || 0) : 0;
+            const cashCount = paymentStatsData.cash ? (paymentStatsData.cash.count || 0) : 0;
+
             const paymentData = [];
             if (momoCount > 0) {
                 paymentData.push({
                     value: momoCount,
                     color: "#30a5ff",
                     highlight: "#62b9fb",
-                    label: "MoMo"
+                    label: "MoMo (" + momoCount + " đơn)"
                 });
             }
             if (cashCount > 0) {
@@ -430,11 +867,10 @@
                     value: cashCount,
                     color: "#ffb53e",
                     highlight: "#fac878",
-                    label: "Tiền mặt"
+                    label: "Tiền mặt (" + cashCount + " đơn)"
                 });
             }
-            
-            // Nếu không có dữ liệu, thêm giá trị 0
+
             if (paymentData.length === 0) {
                 paymentData.push({
                     value: 1,
@@ -445,12 +881,22 @@
             }
 
             try {
-                const ctxPayment = paymentCanvas.getContext("2d");
+                const ctxPayment = canvas.getContext("2d");
+                if (!ctxPayment) return;
+
+                // Destroy chart cũ
                 if (window.myDoughnut) {
-                    window.myDoughnut.destroy();
+                    try {
+                        window.myDoughnut.destroy();
+                    } catch (e) {
+                        console.warn('Lỗi khi destroy payment chart cũ:', e);
+                    }
                 }
+
+                // Vẽ biểu đồ mới
                 window.myDoughnut = new Chart(ctxPayment).Doughnut(paymentData, {
                     responsive: true,
+                    maintainAspectRatio: true,
                     segmentShowStroke: true,
                     segmentStrokeColor: "#fff",
                     segmentStrokeWidth: 2,
@@ -460,32 +906,64 @@
                     animateRotate: true,
                     animateScale: false
                 });
+
+                console.log('✅ Biểu đồ thanh toán đã được cập nhật');
             } catch (error) {
-                console.error('Lỗi vẽ biểu đồ thanh toán:', error);
+                console.error('❌ Lỗi vẽ biểu đồ thanh toán:', error);
             }
+        }
+
+        function initCharts() {
+            // Khởi tạo biểu đồ với dữ liệu ban đầu
+            updateCharts();
         }
 
         // Chờ DOM và Chart.js sẵn sàng
         function waitForChart() {
-            if (typeof Chart !== 'undefined') {
-                if (document.readyState === 'loading') {
-                    document.addEventListener('DOMContentLoaded', initCharts);
-                } else {
-                    initCharts();
-                }
+            if (typeof Chart !== 'undefined' && typeof Chart.prototype !== 'undefined' && typeof Chart.prototype.Line !== 'undefined' && typeof Chart.prototype.Doughnut !== 'undefined') {
+                // Chart.js đã sẵn sàng, khởi tạo biểu đồ
+                console.log('✅ Chart.js đã sẵn sàng (Line và Doughnut), bắt đầu khởi tạo biểu đồ...');
+                setTimeout(initCharts, 100);
             } else {
-                setTimeout(waitForChart, 50); // Thử lại sau 50ms
+                console.log('⏳ Đang chờ Chart.js load...');
+                console.log('⏳ Chart:', typeof Chart);
+                console.log('⏳ Chart.prototype:', typeof Chart.prototype);
+                console.log('⏳ Chart.prototype.Line:', typeof Chart.prototype.Line);
+                console.log('⏳ Chart.prototype.Doughnut:', typeof Chart.prototype.Doughnut);
+                setTimeout(waitForChart, 100);
             }
         }
-        
-        // Bắt đầu chờ
+
+        // Bắt đầu chờ sau khi DOM sẵn sàng
         if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', waitForChart);
+            document.addEventListener('DOMContentLoaded', function () {
+                console.log('📄 DOM đã sẵn sàng, chờ Chart.js...');
+                setTimeout(waitForChart, 500);
+            });
         } else {
-            waitForChart();
+            console.log('📄 DOM đã sẵn sàng, chờ Chart.js...');
+            setTimeout(waitForChart, 500);
         }
-    })();
-</script>
 
-<%- include("../layout/footer.ejs")%>
+        // Lắng nghe sự kiện submit form để load dữ liệu mới (AJAX - optional)
+        // Note: Form sẽ submit bình thường và reload trang, dữ liệu mới sẽ được tính toán từ server
+        // Code này chỉ để cải thiện UX nếu muốn load dữ liệu động mà không reload trang
+        const filterForm = document.querySelector('form[action="/admin/statistics"]');
+        if (filterForm) {
+            // Tùy chọn: Load dữ liệu động khi filter thay đổi (không reload trang)
+            // Để sử dụng, uncomment code bên dưới và comment out onchange="this.form.submit()" trong HTML
+            /*
+            const periodSelect = filterForm.querySelector('select[name="period"]');
+            if (periodSelect) {
+                // Xóa onchange cũ
+                periodSelect.removeAttribute('onchange');
+                periodSelect.addEventListener('change', function() {
+                    loadChartData();
+                });
+            }
+            */
+        }
+                })();
+            </script>
 
+            <%- include("../layout/footer.ejs")%>

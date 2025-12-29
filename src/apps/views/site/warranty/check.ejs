@@ -1,0 +1,311 @@
+<%- include("../layouts/head.ejs", {title: "Kiểm tra bảo hành"})%>
+<%- include("../layouts/header.ejs")%>
+<%- include("../layouts/menu.ejs")%>
+<%- include("../layouts/slider.ejs")%>
+
+<style>
+    /* Modern Warranty Check Styles - Đồng nhất với historyOrder */
+    #warranty-container {
+        background: #f8f9fa;
+        padding: 40px 0;
+        min-height: 500px;
+    }
+
+    .warranty-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 15px;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .warranty-header h1 {
+        margin: 0;
+        font-size: 32px;
+        font-weight: 700;
+    }
+
+    .warranty-header p {
+        margin: 10px 0 0 0;
+        opacity: 0.9;
+        font-size: 16px;
+    }
+
+    .warranty-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+        margin-bottom: 25px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .warranty-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    }
+
+    .warranty-section {
+        padding: 25px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .warranty-section:last-child {
+        border-bottom: none;
+    }
+
+    .section-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: #667eea;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .info-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .info-table th {
+        width: 30%;
+        padding: 12px;
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        font-weight: 600;
+        color: #495057;
+    }
+
+    .info-table td {
+        padding: 12px;
+        border: 1px solid #dee2e6;
+        color: #212529;
+    }
+
+    .serial-number {
+        font-size: 16px;
+        background: #f5f5f5;
+        padding: 8px 15px;
+        border-radius: 8px;
+        font-family: 'Courier New', monospace;
+        font-weight: 600;
+        color: #667eea;
+    }
+
+    .warranty-status {
+        padding: 20px;
+        border-radius: 10px;
+        font-size: 16px;
+        margin-bottom: 15px;
+    }
+
+    .status-valid {
+        background: #d1e7dd;
+        color: #0f5132;
+        border-left: 4px solid #198754;
+    }
+
+    .status-warning {
+        background: #fff3cd;
+        color: #856404;
+        border-left: 4px solid #ffc107;
+    }
+
+    .status-expired {
+        background: #f8d7da;
+        color: #842029;
+        border-left: 4px solid #dc3545;
+    }
+
+    .progress-wrapper {
+        margin-top: 15px;
+    }
+
+    .progress {
+        height: 30px;
+        border-radius: 15px;
+        overflow: hidden;
+        background: #e9ecef;
+    }
+
+    .progress-bar {
+        line-height: 30px;
+        font-size: 14px;
+        font-weight: bold;
+        text-align: center;
+    }
+
+    .qr-code-wrapper {
+        text-align: center;
+        padding: 20px;
+        background: #f8f9fa;
+        border-radius: 10px;
+    }
+
+    .qr-code-image {
+        max-width: 250px;
+        border: 3px solid #dee2e6;
+        padding: 15px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-home {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        padding: 12px 40px;
+        border-radius: 8px;
+        font-weight: 600;
+        border: none;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-home:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+
+    @media (max-width: 768px) {
+        .warranty-header h1 {
+            font-size: 24px;
+        }
+
+        .info-table th,
+        .info-table td {
+            display: block;
+            width: 100%;
+        }
+
+        .info-table th {
+            background: #667eea;
+            color: white;
+            margin-top: 10px;
+        }
+    }
+</style>
+
+<div id="warranty-container">
+    <div class="container">
+        <div class="warranty-header">
+            <h1><i class="fas fa-shield-alt"></i> Thông tin bảo hành sản phẩm</h1>
+            <p>Kiểm tra thời gian bảo hành và trạng thái sản phẩm của bạn</p>
+        </div>
+
+        <div class="warranty-card">
+            <!-- Thông tin sản phẩm -->
+            <div class="warranty-section">
+                <h3 class="section-title">
+                    <i class="fas fa-mobile-alt"></i> Thông tin sản phẩm
+                </h3>
+                <table class="info-table">
+                    <tr>
+                        <th>Tên sản phẩm:</th>
+                        <td><strong><%= warranty.prd_name %></strong></td>
+                    </tr>
+                    <tr>
+                        <th>Serial Number:</th>
+                        <td><span class="serial-number"><%= warranty.serial_number %></span></td>
+                    </tr>
+                    <tr>
+                        <th>Ngày mua:</th>
+                        <td><%= moment(warranty.purchase_date).format('DD/MM/YYYY HH:mm') %></td>
+                    </tr>
+                    <tr>
+                        <th>Thời gian bảo hành:</th>
+                        <td><strong><%= warranty.warranty_period %> tháng</strong></td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- Trạng thái bảo hành -->
+            <div class="warranty-section">
+                <h3 class="section-title">
+                    <i class="fas fa-clock"></i> Trạng thái bảo hành
+                </h3>
+                <div class="warranty-status <%= isExpired ? 'status-expired' : (daysRemaining <= 30 ? 'status-warning' : 'status-valid') %>">
+                    <% if (isExpired) { %>
+                        <h4 style="margin-top: 0;">
+                            <i class="fas fa-times-circle"></i> Bảo hành đã hết hạn
+                        </h4>
+                        <p style="margin-bottom: 5px;">Ngày kết thúc bảo hành: <strong><%= moment(warranty.warranty_end_date).format('DD/MM/YYYY') %></strong></p>
+                        <p style="margin-bottom: 0;">Bảo hành đã hết hạn từ <strong><%= Math.abs(daysRemaining) %> ngày</strong> trước.</p>
+                    <% } else { %>
+                        <h4 style="margin-top: 0;">
+                            <i class="fas fa-check-circle"></i> Bảo hành còn hiệu lực
+                        </h4>
+                        <p style="margin-bottom: 5px;">Ngày kết thúc bảo hành: <strong><%= moment(warranty.warranty_end_date).format('DD/MM/YYYY') %></strong></p>
+                        <p style="font-size: 18px; margin-top: 10px; margin-bottom: 0;">
+                            <strong>Còn lại: <%= daysRemaining %> ngày</strong>
+                            <% if (monthsRemaining > 0) { %>
+                                (<%= monthsRemaining %> tháng <%= daysRemaining % 30 %> ngày)
+                            <% } %>
+                        </p>
+                    <% } %>
+                </div>
+                
+                <!-- Progress bar -->
+                <div class="progress-wrapper">
+                    <div class="progress">
+                        <div class="progress-bar <%= isExpired ? 'bg-danger' : (daysRemaining <= 30 ? 'bg-warning' : 'bg-success') %>" 
+                             role="progressbar" 
+                             style="width: <%= percentageRemaining %>%;">
+                            <%= percentageRemaining.toFixed(1) %>% còn lại
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Thông tin khách hàng -->
+            <div class="warranty-section">
+                <h3 class="section-title">
+                    <i class="fas fa-user"></i> Thông tin khách hàng
+                </h3>
+                <table class="info-table">
+                    <tr>
+                        <th>Họ tên:</th>
+                        <td><%= warranty.customer_name %></td>
+                    </tr>
+                    <tr>
+                        <th>Email:</th>
+                        <td><%= warranty.customer_email %></td>
+                    </tr>
+                    <tr>
+                        <th>Số điện thoại:</th>
+                        <td><%= warranty.customer_phone %></td>
+                    </tr>
+                </table>
+            </div>
+
+            <!-- QR Code -->
+            <div class="warranty-section">
+                <div class="qr-code-wrapper">
+                    <h3 class="section-title" style="justify-content: center;">
+                        <i class="fas fa-qrcode"></i> QR Code bảo hành
+                    </h3>
+                    <img src="<%= warranty.qr_code %>" alt="QR Code" class="qr-code-image">
+                    <p style="margin-top: 15px; color: #6c757d;">
+                        <small>Quét mã QR này để kiểm tra bảo hành bất cứ lúc nào</small>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Nút quay lại -->
+            <div class="warranty-section" style="text-align: center; padding-top: 30px;">
+                <a href="/" class="btn-home">
+                    <i class="fas fa-home"></i> Về trang chủ
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<%- include("../layouts/sidebar.ejs")%>
+<%- include("../layouts/footer.ejs")%>

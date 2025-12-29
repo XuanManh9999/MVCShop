@@ -1,0 +1,47 @@
+@startuml
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Arial"
+skinparam defaultFontSize 11
+
+title LUỒNG XỬ LÝ ĐƠN HÀNG
+
+start
+:Khách hàng đặt hàng;
+
+partition "Bước 1: Tạo đơn hàng" {
+  :Lấy thông tin từ form;
+  :Lấy giỏ hàng từ session;
+  :Tạo Order Model;
+  :Lưu vào database;
+  note right: status: "Đang xử lí"
+}
+
+partition "Bước 2: Thanh toán" {
+  if (MoMo?) then (Có)
+    :Chờ callback;
+    :Cập nhật is_payment;
+  else (Tiền mặt)
+    :Giữ is_payment = false;
+  endif
+}
+
+partition "Bước 3: Cập nhật tồn kho" {
+  :Duyệt từng sản phẩm;
+  :Trừ số lượng: stock -= qty;
+}
+
+partition "Bước 4: Gửi email" {
+  :Render template email;
+  :Gửi email xác nhận;
+}
+
+partition "Bước 5: Xóa giỏ hàng" {
+  :Xóa session cart;
+}
+
+:Hoàn tất;
+stop
+
+@enduml
+

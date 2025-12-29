@@ -1,0 +1,49 @@
+@startuml
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Arial"
+skinparam defaultFontSize 11
+
+title LUỒNG KHÁCH HÀNG MUA HÀNG
+
+start
+:Khách hàng truy cập website;
+if (Đã đăng nhập?) then (Chưa)
+  :Đăng ký/Đăng nhập;
+  :Lưu session;
+else (Đã đăng nhập)
+endif
+:Duyệt sản phẩm;
+:Thêm vào giỏ hàng;
+note right: Lưu trong session
+:Xem giỏ hàng;
+if (Thanh toán?) then (Có)
+  :Nhập thông tin đặt hàng;
+  if (Thanh toán MoMo?) then (Có)
+    :Tạo đơn hàng tạm;
+    :Gọi API MoMo;
+    :Chuyển đến trang thanh toán;
+    if (Thanh toán thành công?) then (Có)
+      :Cập nhật đơn hàng;
+      :Trừ tồn kho;
+      :Gửi email xác nhận;
+      :Xóa giỏ hàng;
+      :Trang thành công;
+    else (Thất bại)
+      :Xóa đơn hàng tạm;
+      :Trang thất bại;
+    endif
+  else (Tiền mặt)
+    :Tạo đơn hàng;
+    :Trừ tồn kho;
+    :Gửi email;
+    :Trang thành công;
+  endif
+else (Không)
+  :Tiếp tục mua sắm;
+endif
+:Xem lịch sử đơn hàng;
+stop
+
+@enduml
+

@@ -1,67 +1,73 @@
 const mongoose = require("../../common/database")();
-const productSchema = new mongoose.Schema({
+const productSchema = new mongoose.Schema(
+  {
     thumbnail: {
-        type: String,
-        required: true,
+      type: String,
+      required: true,
     },
     description: {
-        type: String,
-        default: "",
+      type: String,
+      default: "",
     },
     price: {
-        type: Number,
-        default: 0,
+      type: Number,
+      default: 0,
     },
     cat_id: {
-        type: mongoose.Types.ObjectId,
-        required: true,
-        ref: "Categories",
+      type: mongoose.Types.ObjectId,
+      required: true,
+      ref: "Categories",
     },
     status: {
-        type: String,
-        default:"",
+      type: String,
+      default: "",
     },
     featured: {
-        type: Boolean,
-        default:false,
+      type: Boolean,
+      default: false,
     },
     promotion: {
-        type: String,
-        default:"",
+      type: String,
+      default: "",
     },
     warranty: {
-        type: String,
-        default:"",
+      type: String,
+      default: "",
+    },
+    warranty_period: {
+      type: Number,
+      default: 12, // Mặc định 12 tháng
     },
     accessories: {
-        type: String,
-        default:"",
+      type: String,
+      default: "",
     },
     is_stock: {
-        type: Boolean,
-        required: true,
+      type: Boolean,
+      required: true,
     },
     name: {
-        type: String,
-        text: true,
-        required: true,
+      type: String,
+      text: true,
+      required: true,
     },
     slug: {
-        type: String,
-        required: true,
+      type: String,
+      required: true,
     },
-    is_delete:{
-        type: Boolean,
-        default:false
+    is_delete: {
+      type: Boolean,
+      default: false,
     },
-    stock:{
-        type: Number,
-        default:0
-    }
-},{
+    stock: {
+      type: Number,
+      default: 0,
+    },
+  },
+  {
     timestamps: true,
-});
+  }
+);
 
-
-const productModel = mongoose.model("Products",productSchema,"products");
+const productModel = mongoose.model("Products", productSchema, "products");
 module.exports = productModel;

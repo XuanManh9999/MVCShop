@@ -1,0 +1,52 @@
+@startuml
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Arial"
+skinparam defaultFontSize 11
+
+title LUỒNG XÁC THỰC NGƯỜI DÙNG
+
+start
+if (Đăng ký?) then (Có)
+  :Nhập thông tin;
+  :Kiểm tra email tồn tại;
+  if (Email chưa có?) then (Có)
+    :Mã hóa password (bcrypt);
+    :Lưu vào database;
+    :Redirect đăng nhập;
+  else (Đã có)
+    :Hiển thị lỗi;
+  endif
+else (Đăng nhập)
+  :Nhập email/password;
+  :Tìm user trong DB;
+  if (User tồn tại?) then (Có)
+    :So sánh password (bcrypt);
+    if (Đúng?) then (Có)
+      :Lưu session;
+      :Redirect trang chủ;
+    else (Sai)
+      :Hiển thị lỗi;
+    endif
+  else (Không)
+    :Hiển thị lỗi;
+  endif
+endif
+
+if (Truy cập trang admin?) then (Có)
+  :Kiểm tra session;
+  if (Có session?) then (Có)
+    :Kiểm tra role admin;
+    if (Là admin?) then (Có)
+      :Cho phép truy cập;
+    else (Không)
+      :Redirect đăng nhập;
+    endif
+  else (Không)
+    :Redirect đăng nhập;
+  endif
+endif
+stop
+
+@enduml
+

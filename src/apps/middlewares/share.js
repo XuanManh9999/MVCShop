@@ -9,7 +9,9 @@ module.exports = async(req, res, next) =>{
     res.locals.banners=await bannerModel.find().sort({_id:-1});
     res.locals.sliders=await sliderModel.find().sort({_id:-1});
     
-    res.locals.totalCartItems = req.session.cart.reduce((total,item) => total + item.qty, 0);
+    res.locals.totalCartItems = (req.session.cart && Array.isArray(req.session.cart)) 
+        ? req.session.cart.reduce((total,item) => total + (item.qty || 0), 0) 
+        : 0;
     res.locals.configs = await configModel.findOne({ allow: true })
 
     next();
